@@ -25,6 +25,8 @@
 
 import tkinter
 
+from pytrees.drawable import Drawable
+
 
 class PyTreesCanvas:
 
@@ -35,8 +37,8 @@ class PyTreesCanvas:
         self._canvas = tkinter.Canvas(
             master=self._root,
             bg="white",
-            height=300,
-            width=300,
+            height=600,
+            width=600,
             borderwidth=0,
             highlightthickness=0,
         )
@@ -48,6 +50,9 @@ class PyTreesCanvas:
         self._root.bind("<ButtonPress-1>", self.scroll_start)
         self._root.bind("<B1-Motion>", self.scroll_move)
         self._root.bind("<Configure>", self.resize)
+        # self._root.bind('<MouseWheel>', self.wheel)  # with Windows and MacOS, but not Linux
+        # self._root.bind('<Button-5>',   self.wheel)  # only with Linux, wheel scroll down
+        # self._root.bind('<Button-4>',   self.wheel)  # only with Linux, wheel scroll up
 
         # Show the canvas
         self._root.update()
@@ -67,15 +72,21 @@ class PyTreesCanvas:
             height=event.height,
         )
 
-    def draw_arcs(
-        self,
-        topleft=(10, 10),
-    ):
-        # Draw arcs
-        bottomright = (topleft[0] + 280, topleft[1] + 280)
-        coords = topleft + bottomright
-        self._canvas.create_arc(coords, start=0, extent=150, fill="red")
-        self._canvas.create_arc(coords, start=150, extent=210, fill="green")
+    # def wheel(
+    #     self,
+    #     event: tkinter.Event,
+    # ) -> None:
+    #     scale = 1.0
+    #     if event.num == 5 or event.delta == -120:  # scroll down
+    #         scale /= 2
+    #     if event.num == 4 or event.delta == 120:  # scroll up
+    #         scale *= 2
+
+    #     self._canvas.scale(
+    #         'all',
+    #         0, 0,
+    #         scale, scale,
+    #     )
 
     def update(
         self,
@@ -86,3 +97,9 @@ class PyTreesCanvas:
         self,
     ):
         self._canvas.delete("all")
+
+    def draw(
+        self,
+        item: Drawable,
+    ) -> None:
+        item.draw(self._canvas)

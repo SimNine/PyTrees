@@ -23,21 +23,15 @@
 #############################################################################
 
 
-import time
-from pytrees.canvas import PyTreesCanvas
-from pytrees.environment import Environment
+import abc
+import tkinter
 
 
-def main():
-    treecanvas = PyTreesCanvas()
+class Drawable(abc.ABC):
 
-    environment = Environment()
-
-    while True:
-        treecanvas.clear()
-        treecanvas.draw(environment)
-        treecanvas.update()
-        time.sleep(0.01)
-
-
-main()
+    @abc.abstractmethod
+    def draw(
+        self,
+        canvas: tkinter.Canvas,
+    ) -> None:
+        pass

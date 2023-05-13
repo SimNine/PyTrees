@@ -23,21 +23,24 @@
 #############################################################################
 
 
-import time
-from pytrees.canvas import PyTreesCanvas
-from pytrees.environment import Environment
+class Pos:
 
+    def __init__(
+        self,
+        x: int,
+        y: int,
+    ) -> None:
+        self.x = x
+        self.y = y
 
-def main():
-    treecanvas = PyTreesCanvas()
+    def __eq__(self, __value: 'Pos') -> bool:
+        return self.x == value.x and self.y == value.y
 
-    environment = Environment()
+    def __add__(self, __value: 'Pos') -> 'Pos':
+        return Pos(self.x + __value.x, self.y + __value.y)
 
-    while True:
-        treecanvas.clear()
-        treecanvas.draw(environment)
-        treecanvas.update()
-        time.sleep(0.01)
+    def __sub__(self, __value: 'Pos') -> 'Pos':
+        return Pos(self.x - __value.x, self.y - __value.y)
 
-
-main()
+    def tuple(self) -> tuple[int, int]:
+        return (self.x, self.y)

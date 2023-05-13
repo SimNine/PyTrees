@@ -23,21 +23,61 @@
 #############################################################################
 
 
-import time
-from pytrees.canvas import PyTreesCanvas
-from pytrees.environment import Environment
+import random
+import tkinter
+from tkinter import Canvas
 
 
-def main():
-    treecanvas = PyTreesCanvas()
-
-    environment = Environment()
-
-    while True:
-        treecanvas.clear()
-        treecanvas.draw(environment)
-        treecanvas.update()
-        time.sleep(0.01)
+from pytrees.drawable import Drawable
+from pytrees.utils import Pos
 
 
-main()
+class Environment(Drawable):
+
+    SKY_BLUE = "#87CEEB"
+
+    WIDTH = 3000
+    HEIGHT = 1500
+
+    def __init__(self) -> None:
+        self._dims = (self.WIDTH, self.HEIGHT)
+
+        self._trees: set[PyTree] = set()
+        for i in range(100):
+            self._trees.add(PyTree(
+                Pos(
+                    random.randint(0, self.WIDTH),
+                    random.randint(0, self.HEIGHT),
+                )
+            ))
+
+    def draw(self, canvas: Canvas) -> None:
+        # Draw background
+        canvas.create_rectangle(
+            (0, 0),
+            self._dims,
+            fill=self.SKY_BLUE,
+        )
+
+        # Draw trees
+        for tree in self._trees:
+            tree.draw(canvas)
+
+
+class PyTree(Drawable):
+
+    RADIUS = 10
+    BROWN = "#964B00"
+
+    def __init__(
+        self,
+        root: Pos,
+    ) -> None:
+        self._root = root
+
+    def draw(self, canvas: Canvas) -> None:
+        canvas.create_oval(
+            (self._root - Pos(self.RADIUS, self.RADIUS)).tuple(),
+            (self._root + Pos(self.RADIUS, self.RADIUS)).tuple(),
+            fill=self.BROWN,
+        )
