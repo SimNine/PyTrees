@@ -34,7 +34,7 @@ class Pos:
         self.y = y
 
     def __eq__(self, __value: 'Pos') -> bool:
-        return self.x == value.x and self.y == value.y
+        return self.x == __value.x and self.y == __value.y
 
     def __add__(self, __value: 'Pos') -> 'Pos':
         return Pos(self.x + __value.x, self.y + __value.y)
@@ -44,3 +44,6 @@ class Pos:
 
     def tuple(self) -> tuple[int, int]:
         return (self.x, self.y)
+
+
+Dims = Pos
