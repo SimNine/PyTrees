@@ -23,21 +23,45 @@
 #############################################################################
 
 
+import multiprocessing
 import time
+import tkinter
 from pytrees.canvas import PyTreesCanvas
 from pytrees.environment import Environment
 
 
-def main():
+def thread_visualize(queue: multiprocessing.Queue):
     treecanvas = PyTreesCanvas()
+    while True:
+        environment = queue.get()
+        try:
+            treecanvas.clear()
+            treecanvas.draw(environment)
+            treecanvas.update()
+        except tkinter.TclError as e:
+            return
+        time.sleep(0.05)  # 20 FPS cap
 
+
+def main():
     environment = Environment()
 
-    while True:
-        treecanvas.clear()
-        treecanvas.draw(environment)
-        treecanvas.update()
-        time.sleep(0.01)
+    data_queue = multiprocessing.Queue(1)
+
+    visualization_process = multiprocessing.Process(
+        target=thread_visualize,
+        args=[data_queue],
+    )
+    visualization_process.start()
+
+    while visualization_process.is_alive():
+        environment.tick()
+        try:
+            data_queue.put_nowait(environment)
+        except Exception:
+            pass
+        time.sleep(0.02)
 
 
-main()
+if __name__ == '__main__':
+    main()
