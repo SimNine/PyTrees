@@ -26,11 +26,12 @@
 import multiprocessing
 import time
 import tkinter
+from typing import Any
 from pytrees.canvas import PyTreesCanvas
 from pytrees.environment import Environment
 
 
-def thread_visualize(queue: multiprocessing.Queue):
+def thread_visualize(queue: multiprocessing.Queue[Any]):
     treecanvas = PyTreesCanvas()
     while True:
         environment = queue.get()
@@ -39,6 +40,7 @@ def thread_visualize(queue: multiprocessing.Queue):
             treecanvas.draw(environment)
             treecanvas.update()
         except tkinter.TclError as e:
+            print(f"Tkinter exiting: {e}")
             return
         time.sleep(0.05)  # 20 FPS cap
 
@@ -46,7 +48,7 @@ def thread_visualize(queue: multiprocessing.Queue):
 def main():
     environment = Environment()
 
-    data_queue = multiprocessing.Queue(1)
+    data_queue: multiprocessing.Queue[Any] = multiprocessing.Queue(1)
 
     visualization_process = multiprocessing.Process(
         target=thread_visualize,

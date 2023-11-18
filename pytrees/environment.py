@@ -31,7 +31,10 @@ from tkinter import Canvas
 
 
 from pytrees.drawable import Drawable
-from pytrees.utils import Pos, Dims
+from pytrees.tree import Tree
+from pytrees.utils import (
+    Pos, Dims, PyTreeColor,
+)
 
 
 class ParticleType(Enum):
@@ -40,11 +43,6 @@ class ParticleType(Enum):
 
 
 class Environment(Drawable):
-
-    COLOR_SKY_BLUE = "#87CEEB"
-    COLOR_GREEN = "#3BF818"
-    COLOR_YELLOW = "#F8EE18"
-    COLOR_BLUE = "#1756F8"
 
     WIDTH = 3000
     HEIGHT = 1200
@@ -85,9 +83,9 @@ class Environment(Drawable):
         self._warmup(1000)
 
         # Create trees
-        self._trees: set[PyTree] = set()
+        self._trees: set[Tree] = set()
         for i in range(100):
-            self._trees.add(PyTree(
+            self._trees.add(Tree(
                 Pos(
                     random.randint(0, self.WIDTH),
                     random.randint(0, self.HEIGHT),
@@ -111,13 +109,13 @@ class Environment(Drawable):
                 self._particles_sun.append(Particle(
                     random.randint(0, self.WIDTH),
                     0,
-                    color=self.COLOR_YELLOW,
+                    color=PyTreeColor.YELLOW.value,
                 ))
             elif type is ParticleType.WATER:
                 self._particles_water.append(Particle(
                     random.randint(0, self.WIDTH),
                     0,
-                    color=self.COLOR_BLUE,
+                    color=PyTreeColor.BLUE.value,
                 ))
 
     def draw(self, canvas: Canvas) -> None:
@@ -125,7 +123,7 @@ class Environment(Drawable):
         canvas.create_rectangle(
             (0, 0),
             self._dims.tuple(),
-            fill=self.COLOR_SKY_BLUE,
+            fill=PyTreeColor.SKY_BLUE.value,
         )
 
         # Draw landscape
@@ -208,7 +206,7 @@ class Landscape(Drawable):
             canvas.create_line(
                 (i, level),
                 (i, self._dims.y),
-                fill=PyTree.BROWN,
+                fill=PyTreeColor.BROWN.value,
             )
 
     def _populate_ground_levels(self) -> None:
@@ -231,25 +229,6 @@ class Landscape(Drawable):
             return True
         else:
             return False
-
-
-class PyTree(Drawable):
-
-    RADIUS = 10
-    BROWN = "#964B00"
-
-    def __init__(
-        self,
-        root: Pos,
-    ) -> None:
-        self._root = root
-
-    def draw(self, canvas: Canvas) -> None:
-        canvas.create_oval(
-            (self._root - Pos(self.RADIUS, self.RADIUS)).tuple(),
-            (self._root + Pos(self.RADIUS, self.RADIUS)).tuple(),
-            fill=self.BROWN,
-        )
 
 
 class Particle(Pos, Drawable):

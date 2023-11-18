@@ -23,6 +23,17 @@
 #############################################################################
 
 
+from enum import Enum
+
+
+class PyTreeColor(Enum):
+    SKY_BLUE = "#87CEEB"
+    GREEN = "#3BF818"
+    YELLOW = "#F8EE18"
+    BLUE = "#1756F8"
+    BROWN = "#964B00"
+
+
 class Pos:
 
     def __init__(
