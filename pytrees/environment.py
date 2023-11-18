@@ -163,6 +163,16 @@ class Environment(Drawable):
                 ret.append(particle)
         return ret
 
+    def _collide_particles_with_trees(
+        self,
+        particles: list["Particle"],
+    ) -> list["Particle"]:
+        ret: list[Particle] = []
+        for particle in particles:
+            pass
+            # do stuff
+        return ret
+
 
 class Landscape(Drawable):
 
