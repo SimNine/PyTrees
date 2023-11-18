@@ -32,6 +32,7 @@ class PyTreeColor(Enum):
     YELLOW = "#F8EE18"
     BLUE = "#1756F8"
     BROWN = "#964B00"
+    BLACK = "#000000"
 
 
 class Pos:
@@ -44,8 +45,11 @@ class Pos:
         self.x = x
         self.y = y
 
-    def __eq__(self, __value: 'Pos') -> bool:
-        return self.x == __value.x and self.y == __value.y
+    def __eq__(self, __value: object) -> bool:
+        if type(__value) is Pos:
+            return self.x == __value.x and self.y == __value.y
+        else:
+            return False
 
     def __add__(self, __value: 'Pos') -> 'Pos':
         return Pos(self.x + __value.x, self.y + __value.y)

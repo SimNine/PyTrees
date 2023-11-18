@@ -31,7 +31,7 @@ from pytrees.canvas import PyTreesCanvas
 from pytrees.environment import Environment
 
 
-def thread_visualize(queue: multiprocessing.Queue[Any]):
+def thread_visualize(queue: "multiprocessing.Queue[Any]") -> None:
     treecanvas = PyTreesCanvas()
     while True:
         environment = queue.get()

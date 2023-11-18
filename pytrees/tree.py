@@ -23,6 +23,9 @@
 #############################################################################
 
 
+from enum import Enum
+import math
+import random
 from tkinter import Canvas
 from typing import Optional
 
@@ -30,19 +33,45 @@ from pytrees.drawable import Drawable
 from pytrees.utils import Pos, PyTreeColor
 
 
+class TreeNodeType(Enum):
+    STRUCT = PyTreeColor.BLACK
+    LEAF = PyTreeColor.GREEN
+
+
 class TreeNode(Drawable):
 
     RADIUS = 10
+    DIST_MIN = 40.0
 
     def __init__(
         self,
-        pos: Pos,
         owner: "Tree",
         parent: Optional["TreeNode"],
+        type: Optional[TreeNodeType],
+        pos: Optional[Pos],
     ) -> None:
-        self._parent: Optional[TreeNode] = parent
+        # Ownership
         self._owner: Tree = owner
-        self._pos: Pos = pos
+        self._parent: Optional[TreeNode] = parent
+
+        # Type
+        if type:
+            self._type = type
+        else:
+            self._type = random.choice(list(TreeNodeType))
+
+        # Position
+        if pos:
+            self._pos = pos
+        else:
+            if self._parent is None:
+                raise Exception("non-positioned node has no parent")
+            dist = random.random()*30.0 + self.DIST_MIN
+            angle = math.radians(random.random()*360.0)
+            self._pos = self._parent._pos + Pos(
+                int(math.sin(angle)*dist),
+                int(math.cos(angle)*dist),
+            )
 
         self._size = self.RADIUS
 
@@ -50,7 +79,23 @@ class TreeNode(Drawable):
         canvas.create_oval(
             (self._pos - Pos(TreeNode.RADIUS, TreeNode.RADIUS)).tuple(),
             (self._pos + Pos(TreeNode.RADIUS, TreeNode.RADIUS)).tuple(),
-            fill=PyTreeColor.BROWN.value,
+            fill=self._type.value.value,
+        )
+
+    @classmethod
+    def clone(
+        cls,
+        node: "TreeNode",
+        owner: Optional["Tree"],
+        parent: Optional["TreeNode"],
+        type: Optional[TreeNodeType],
+        pos: Optional[Pos],
+    ) -> "TreeNode":
+        return cls(
+            owner=(owner if owner else node._owner),
+            parent=(parent if parent else node._parent),
+            type=(type if type else node._type),
+            pos=(pos if pos else node._pos),
         )
 
 
@@ -61,8 +106,19 @@ class Tree(Drawable):
         root: Pos,
     ) -> None:
         self._root = root
-        self._root_node = TreeNode(root, self, None)
+        self._root_node = TreeNode(
+            owner=self,
+            parent=None,
+            type=TreeNodeType.STRUCT,
+            pos=root,
+        )
         self._nodes: list[TreeNode] = [self._root_node]
+        self._nodes.append(TreeNode(
+            owner=self,
+            parent=self._root_node,
+            type=TreeNodeType.LEAF,
+            pos=None,
+        ))
 
         self._fitness = 0
         self._nutrients = 0
