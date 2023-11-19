@@ -26,6 +26,9 @@
 from enum import Enum
 
 
+DEBUG = False
+
+
 class PyTreeColor(Enum):
     SKY_BLUE = "#87CEEB"
     GREEN = "#3BF818"

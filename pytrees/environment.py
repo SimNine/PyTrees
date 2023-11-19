@@ -33,7 +33,7 @@ from tkinter import Canvas
 from pytrees.drawable import Drawable
 from pytrees.tree import Tree
 from pytrees.utils import (
-    Pos, Dims, PyTreeColor,
+    DEBUG, Pos, Dims, PyTreeColor,
 )
 
 
@@ -111,16 +111,14 @@ class Environment(Drawable):
     ) -> None:
         for _ in range(num_particles):
             if type is ParticleType.SUN:
-                self._particles_sun.add(Particle(
+                self._particles_sun.add(ParticleSun(
                     random.randint(0, self.WIDTH),
                     0,
-                    color=PyTreeColor.YELLOW.value,
                 ))
             elif type is ParticleType.WATER:
-                self._particles_water.add(Particle(
+                self._particles_water.add(ParticleRain(
                     random.randint(0, self.WIDTH),
                     0,
-                    color=PyTreeColor.BLUE.value,
                 ))
 
     def draw(self, canvas: Canvas) -> None:
@@ -255,10 +253,12 @@ class Particle(Pos, Drawable):
         self,
         x: int, y: int,
         color: str,
+        power: int,
     ) -> None:
         super().__init__(x, y)
         self._color = color
         self.spent = False
+        self.power = power
 
     def draw(
         self,
@@ -269,8 +269,40 @@ class Particle(Pos, Drawable):
             self.x + 2, self.y + 2,
             fill=self._color,
         )
+        if DEBUG:
+            canvas.create_text(
+                self.tuple(),
+                fill=PyTreeColor.BLACK.value,
+                text=str(self.power),
+            )
 
     def tick(
         self,
     ) -> None:
         self.y += 1
+
+
+class ParticleSun(Particle):
+
+    POWER_BASE = 70000
+    POWER_INC_PER_TICK = -45
+
+    def __init__(self, x: int, y: int) -> None:
+        super().__init__(x, y, PyTreeColor.YELLOW.value, self.POWER_BASE)
+
+    def tick(self) -> None:
+        self.power += self.POWER_INC_PER_TICK
+        return super().tick()
+
+
+class ParticleRain(Particle):
+
+    POWER_BASE = -50000
+    POWER_INC_PER_TICK = 55
+
+    def __init__(self, x: int, y: int) -> None:
+        super().__init__(x, y, PyTreeColor.BLUE.value, self.POWER_BASE)
+
+    def tick(self) -> None:
+        self.power += self.POWER_INC_PER_TICK
+        return super().tick()

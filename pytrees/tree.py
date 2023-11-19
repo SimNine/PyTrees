@@ -31,7 +31,7 @@ from typing import Optional
 
 from pytrees.drawable import Drawable
 import pytrees.mutation
-from pytrees.utils import Pos, PyTreeColor
+from pytrees.utils import DEBUG, Pos, PyTreeColor
 
 
 class TreeNodeType(Enum):
@@ -239,8 +239,9 @@ class Tree(Drawable):
 
     def draw(self, canvas: Canvas) -> None:
         self._root_node.draw_recursive(canvas)
-        canvas.create_rectangle(
-            self._topleft.tuple(),
-            self._botright.tuple(),
-            outline=PyTreeColor.BLACK.value,
-        )
+        if DEBUG:
+            canvas.create_rectangle(
+                self._topleft.tuple(),
+                self._botright.tuple(),
+                outline=PyTreeColor.BLACK.value,
+            )
