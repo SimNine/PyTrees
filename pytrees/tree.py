@@ -245,3 +245,8 @@ class Tree(Drawable):
                 self._botright.tuple(),
                 outline=PyTreeColor.BLACK.value,
             )
+            canvas.create_text(
+                self._topleft.tuple(),
+                fill=PyTreeColor.ORANGE.value,
+                text=str(self._energy),
+            )

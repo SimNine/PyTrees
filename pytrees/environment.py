@@ -182,6 +182,7 @@ class Environment(Drawable):
                             node._pos.y - node._size < particle.y < node._pos.y + node._size
                         ):
                             particle.spent = True
+                            tree._energy += particle.power
                             break
                     if particle.spent:
                         break

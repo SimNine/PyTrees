@@ -26,7 +26,7 @@
 from enum import Enum
 
 
-DEBUG = False
+DEBUG = True
 
 
 class PyTreeColor(Enum):
@@ -36,6 +36,7 @@ class PyTreeColor(Enum):
     BLUE = "#1756F8"
     BROWN = "#964B00"
     BLACK = "#000000"
+    ORANGE = "#F5A742"
 
 
 class Pos:
