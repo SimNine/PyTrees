@@ -71,10 +71,21 @@ class Pos:
 Dims = Pos
 
 
-# class Bounds:
+class Bounds:
 
-#     def __init__(
-#         self,
-#         areas: list[tuple[Pos, Pos]]
-#     ) -> None:
-#         self._areas = areas
+    def __init__(
+        self,
+        topleft: Pos,
+        botright: Pos,
+    ) -> None:
+        self.topleft = topleft
+        self.botright = botright
+
+    def contains(
+        self,
+        point: Pos,
+    ) -> bool:
+        return (
+            self.topleft.y < point.y < self.botright.y and
+            self.topleft.x < point.x < self.botright.x
+        )

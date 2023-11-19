@@ -172,15 +172,9 @@ class Environment(Drawable):
     ) -> set["Particle"]:
         for particle in particles:
             for tree in self._trees:
-                if (
-                    tree._topleft.x < particle.x < tree._botright.x and
-                    tree._topleft.y < particle.y < tree._botright.y
-                ):
+                if tree.bounds.contains(particle):
                     for node in tree._nodes:
-                        if (
-                            node._pos.x - node._size < particle.x < node._pos.x + node._size and
-                            node._pos.y - node._size < particle.y < node._pos.y + node._size
-                        ):
+                        if node.contains(particle):
                             particle.spent = True
                             tree._energy += particle.power
                             break

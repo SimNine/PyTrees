@@ -31,7 +31,7 @@ from typing import Optional
 
 from pytrees.drawable import Drawable
 import pytrees.mutation
-from pytrees.utils import DEBUG, Pos, PyTreeColor
+from pytrees.utils import DEBUG, Bounds, Pos, PyTreeColor
 
 
 class TreeNodeType(Enum):
@@ -128,6 +128,14 @@ class TreeNode(Drawable):
             int(math.sin(self._angle)*self._dist),
             int(math.cos(self._angle)*self._dist),
         )
+
+    def contains(
+        self,
+        pos: Pos,
+    ) -> bool:
+        delta = pos - self._pos
+        dist = math.sqrt(delta.x**2 + delta.y**2)
+        return dist < self._size
 
     def get_pos_extremes(
         self,
@@ -234,19 +242,19 @@ class Tree(Drawable):
         )
         self._root_node.mutate()
 
-        self._topleft, self._botright = self._root_node.get_pos_extremes()
+        self.bounds = Bounds(*self._root_node.get_pos_extremes())
         self._nodes: set[TreeNode] = self._root_node.get_children_recursively()
 
     def draw(self, canvas: Canvas) -> None:
         self._root_node.draw_recursive(canvas)
         if DEBUG:
             canvas.create_rectangle(
-                self._topleft.tuple(),
-                self._botright.tuple(),
+                self.bounds.topleft.tuple(),
+                self.bounds.botright.tuple(),
                 outline=PyTreeColor.BLACK.value,
             )
             canvas.create_text(
-                self._topleft.tuple(),
+                self.bounds.topleft.tuple(),
                 fill=PyTreeColor.ORANGE.value,
                 text=str(self._energy),
             )
