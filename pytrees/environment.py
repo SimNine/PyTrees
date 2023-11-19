@@ -47,6 +47,9 @@ class Environment(Drawable):
     WIDTH = 3000
     HEIGHT = 1200
 
+    NUM_TREES_STARTING = 200
+    NUM_WARMUP_TICKS = 1000
+
     def __init__(self) -> None:
         self._dims = Dims(self.WIDTH, self.HEIGHT)
 
@@ -80,15 +83,16 @@ class Environment(Drawable):
         )
 
         # Create initial particles
-        self._warmup(1000)
+        self._warmup(self.NUM_WARMUP_TICKS)
 
         # Create trees
         self._trees: set[Tree] = set()
-        for i in range(100):
+        for _ in range(self.NUM_TREES_STARTING):
+            x_pos = random.randint(0, self.WIDTH)
             self._trees.add(Tree(
                 Pos(
-                    random.randint(0, self.WIDTH),
-                    random.randint(0, self.HEIGHT),
+                    x_pos,
+                    self._landscape._ground_levels[x_pos],
                 )
             ))
 
@@ -166,7 +170,7 @@ class Environment(Drawable):
         particles: list["Particle"],
     ) -> list["Particle"]:
         ret: list[Particle] = []
-        for particle in particles:
+        for _ in particles:
             pass
             # do stuff
         return ret

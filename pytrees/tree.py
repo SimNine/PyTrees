@@ -53,6 +53,7 @@ class TreeNode(Drawable):
         # Ownership
         self._owner: Tree = owner
         self._parent: Optional[TreeNode] = parent
+        self._children: list[TreeNode] = []
 
         # Type
         if type:
@@ -75,12 +76,30 @@ class TreeNode(Drawable):
 
         self._size = self.RADIUS
 
+    def add_child(self) -> None:
+        self._children.append(TreeNode(
+            owner=self._owner,
+            parent=self,
+            type=TreeNodeType.LEAF,
+            pos=None,
+        ))
+
     def draw(self, canvas: Canvas) -> None:
         canvas.create_oval(
             (self._pos - Pos(TreeNode.RADIUS, TreeNode.RADIUS)).tuple(),
             (self._pos + Pos(TreeNode.RADIUS, TreeNode.RADIUS)).tuple(),
             fill=self._type.value.value,
         )
+
+    def draw_recursive(self, canvas: Canvas) -> None:
+        for child in self._children:
+            canvas.create_line(
+                self._pos.tuple(),
+                child._pos.tuple(),
+                fill=PyTreeColor.BLACK.value,
+            )
+            child.draw_recursive(canvas)
+        self.draw(canvas)
 
     @classmethod
     def clone(
@@ -98,6 +117,10 @@ class TreeNode(Drawable):
             pos=(pos if pos else node._pos),
         )
 
+    def mutate(self):
+        # TODO
+        pass
+
 
 class Tree(Drawable):
 
@@ -112,13 +135,7 @@ class Tree(Drawable):
             type=TreeNodeType.STRUCT,
             pos=root,
         )
-        self._nodes: list[TreeNode] = [self._root_node]
-        self._nodes.append(TreeNode(
-            owner=self,
-            parent=self._root_node,
-            type=TreeNodeType.LEAF,
-            pos=None,
-        ))
+        self._root_node.add_child()
 
         self._fitness = 0
         self._nutrients = 0
@@ -130,10 +147,4 @@ class Tree(Drawable):
         self._botright = Pos(0, 0)
 
     def draw(self, canvas: Canvas) -> None:
-        for node in self._nodes:
-            node.draw(canvas)
-        # canvas.create_oval(
-        #     (self._root - Pos(TreeNode.RADIUS, TreeNode.RADIUS)).tuple(),
-        #     (self._root + Pos(TreeNode.RADIUS, TreeNode.RADIUS)).tuple(),
-        #     fill=PyTreeColor.BROWN.value,
-        # )
+        self._root_node.draw_recursive(canvas)
