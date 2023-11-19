@@ -53,8 +53,10 @@ class Environment(Drawable):
     def __init__(self) -> None:
         self._dims = Dims(self.WIDTH, self.HEIGHT)
 
-        self._particles_sun: list[Particle] = []
-        self._particles_water: list[Particle] = []
+        self._trees: set[Tree] = set()
+
+        self._particles_sun: set[Particle] = set()
+        self._particles_water: set[Particle] = set()
 
         # Create landscape
         gFreq = [
@@ -86,7 +88,6 @@ class Environment(Drawable):
         self._warmup(self.NUM_WARMUP_TICKS)
 
         # Create trees
-        self._trees: set[Tree] = set()
         for _ in range(self.NUM_TREES_STARTING):
             x_pos = random.randint(0, self.WIDTH)
             self._trees.add(Tree(
@@ -110,13 +111,13 @@ class Environment(Drawable):
     ) -> None:
         for _ in range(num_particles):
             if type is ParticleType.SUN:
-                self._particles_sun.append(Particle(
+                self._particles_sun.add(Particle(
                     random.randint(0, self.WIDTH),
                     0,
                     color=PyTreeColor.YELLOW.value,
                 ))
             elif type is ParticleType.WATER:
-                self._particles_water.append(Particle(
+                self._particles_water.add(Particle(
                     random.randint(0, self.WIDTH),
                     0,
                     color=PyTreeColor.BLUE.value,
@@ -154,26 +155,44 @@ class Environment(Drawable):
             p.tick()
         self._particles_sun = self._collide_particles_with_landscape(self._particles_sun)
         self._particles_water = self._collide_particles_with_landscape(self._particles_water)
+        self._particles_sun = self._collide_particles_with_trees(self._particles_sun)
+        self._particles_water = self._collide_particles_with_trees(self._particles_water)
 
     def _collide_particles_with_landscape(
         self,
-        particles: list["Particle"],
-    ) -> list["Particle"]:
-        ret: list[Particle] = []
+        particles: set["Particle"],
+    ) -> set["Particle"]:
+        ret: set[Particle] = set()
         for particle in particles:
             if not self._landscape.is_pos_ground(particle):
-                ret.append(particle)
+                ret.add(particle)
         return ret
 
     def _collide_particles_with_trees(
         self,
-        particles: list["Particle"],
-    ) -> list["Particle"]:
-        ret: list[Particle] = []
-        for _ in particles:
-            pass
-            # do stuff
-        return ret
+        particles: set["Particle"],
+    ) -> set["Particle"]:
+        for particle in particles:
+            for tree in self._trees:
+                if (
+                    tree._topleft.x < particle.x < tree._botright.x and
+                    tree._topleft.y < particle.y < tree._botright.y
+                ):
+                    for node in tree._nodes:
+                        if (
+                            node._pos.x - node._size < particle.x < node._pos.x + node._size and
+                            node._pos.y - node._size < particle.y < node._pos.y + node._size
+                        ):
+                            particle.spent = True
+                            break
+                    if particle.spent:
+                        break
+
+        return {
+            particle
+            for particle in particles
+            if not particle.spent
+        }
 
 
 class Landscape(Drawable):
@@ -201,11 +220,6 @@ class Landscape(Drawable):
         self._populate_ground_levels()
 
     def draw(self, canvas: Canvas) -> None:
-        canvas.create_rectangle(
-            20, 20,
-            30, 80,
-            fill="#3BF818"
-        )
         for i, level in enumerate(self._ground_levels):
             canvas.create_line(
                 (i, level),
@@ -217,9 +231,9 @@ class Landscape(Drawable):
         for x in range(self._dims.x):
             sum: float = 0
             for d in range(self._ground_degree):
-                sum += math.cos(
+                sum += int(math.cos(
                     self._ground_freqs[d]*x + self._ground_disps[d]
-                )*self._ground_amps[d]
+                )*self._ground_amps[d])
                 sum += self._ground_baseline
             self._ground_levels.append(sum)
 
@@ -244,6 +258,7 @@ class Particle(Pos, Drawable):
     ) -> None:
         super().__init__(x, y)
         self._color = color
+        self.spent = False
 
     def draw(
         self,

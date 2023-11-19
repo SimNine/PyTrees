@@ -30,18 +30,18 @@ from tkinter import Canvas
 from typing import Optional
 
 from pytrees.drawable import Drawable
+import pytrees.mutation
 from pytrees.utils import Pos, PyTreeColor
 
 
 class TreeNodeType(Enum):
     STRUCT = PyTreeColor.BLACK
     LEAF = PyTreeColor.GREEN
+    ROOT = PyTreeColor.BROWN
+    WATERCATCHER = PyTreeColor.BLUE
 
 
 class TreeNode(Drawable):
-
-    RADIUS = 10
-    DIST_MIN = 40.0
 
     def __init__(
         self,
@@ -63,31 +63,33 @@ class TreeNode(Drawable):
 
         # Position
         if pos:
+            self._dist = 0
+            self._angle = 0
             self._pos = pos
         else:
             if self._parent is None:
                 raise Exception("non-positioned node has no parent")
-            dist = random.random()*30.0 + self.DIST_MIN
-            angle = math.radians(random.random()*360.0)
-            self._pos = self._parent._pos + Pos(
-                int(math.sin(angle)*dist),
-                int(math.cos(angle)*dist),
-            )
+            self._dist = random.random()*30.0 + pytrees.mutation.MIN_NODE_DISTANCE
+            self._angle = math.radians(random.random()*360.0)
+            self.update_pos_absolute()
 
-        self._size = self.RADIUS
+        self._size = int(pytrees.mutation.MIN_NODE_SIZE) * 2
 
-    def add_child(self) -> None:
+    def add_child(
+        self,
+        type: TreeNodeType,
+    ) -> None:
         self._children.append(TreeNode(
             owner=self._owner,
             parent=self,
-            type=TreeNodeType.LEAF,
+            type=type,
             pos=None,
         ))
 
     def draw(self, canvas: Canvas) -> None:
         canvas.create_oval(
-            (self._pos - Pos(TreeNode.RADIUS, TreeNode.RADIUS)).tuple(),
-            (self._pos + Pos(TreeNode.RADIUS, TreeNode.RADIUS)).tuple(),
+            (self._pos - Pos(self._size, self._size)).tuple(),
+            (self._pos + Pos(self._size, self._size)).tuple(),
             fill=self._type.value.value,
         )
 
@@ -117,9 +119,98 @@ class TreeNode(Drawable):
             pos=(pos if pos else node._pos),
         )
 
+    def update_pos_absolute(
+        self,
+    ) -> None:
+        if self._parent is None:
+            return
+        self._pos = self._parent._pos + Pos(
+            int(math.sin(self._angle)*self._dist),
+            int(math.cos(self._angle)*self._dist),
+        )
+
+    def get_pos_extremes(
+        self,
+    ) -> tuple[Pos, Pos]:
+        topleft = self._pos - Pos(self._size, self._size)
+        bottomright = self._pos + Pos(self._size, self._size)
+        for child in self._children:
+            child_topleft, child_bottomright = child.get_pos_extremes()
+            if child_topleft.x < topleft.x:
+                topleft.x = child_topleft.x
+            if child_topleft.y < topleft.y:
+                topleft.y = child_topleft.y
+            if child_bottomright.x > bottomright.x:
+                bottomright.x = child_bottomright.x
+            if child_bottomright.y > bottomright.y:
+                bottomright.y = child_bottomright.y
+        return (topleft, bottomright)
+
+    def get_children_recursively(
+        self,
+    ) -> set["TreeNode"]:
+        ret: set["TreeNode"] = {self}
+        for child in self._children:
+            ret.update(child.get_children_recursively())
+        return ret
+
     def mutate(self):
-        # TODO
-        pass
+        # Chance of changing this node's type
+        if random.random() < pytrees.mutation.CHANCE_NODE_TYPE:
+            new_type = random.choice(list(TreeNodeType))
+
+            # re-roll, to make it more likely that the root node is a struct node
+            if (
+                new_type is not TreeNodeType.STRUCT and
+                random.random() < pytrees.mutation.CHANCE_NODE_TYPE_STRUCT
+            ):
+                new_type = random.choice(list(TreeNodeType))
+
+            # if the new type is not a struct, remove all children
+            if new_type is not TreeNodeType.STRUCT:
+                self._children.clear()
+
+            # set the new type
+            self._type = new_type
+
+        # Chance of mutating this node's size
+        if random.random() < pytrees.mutation.CHANCE_NODE_SIZE:
+            size_inc = int(random.random() * 20.0 - 10.0)
+            self._size += size_inc
+            if self._size < pytrees.mutation.MIN_NODE_SIZE:
+                self._size = pytrees.mutation.MIN_NODE_SIZE
+
+        # For each child, chance of losing it. If not lost, mutate it
+        remaining_children: list[TreeNode] = []
+        for child in self._children:
+            if random.random() > pytrees.mutation.CHANCE_NODE_DELETE:
+                remaining_children.append(child)
+                child.mutate()
+        self._children = remaining_children
+
+        # Chance of adding child nodes, if this is a structure node
+        while (
+            self._type is TreeNodeType.STRUCT and
+            random.random() < pytrees.mutation.CHANCE_NODE_ADD
+        ):
+            self.add_child(random.choice(list(TreeNodeType)))
+
+        # Chance to mutate angle between this node and its parent
+        if random.random() < pytrees.mutation.CHANCE_NODE_ANGLE:
+            angle_inc = random.random() * 30.0 - 15
+            self._angle += angle_inc
+            self.update_pos_absolute()
+
+        # Chance of changing this node's distance from its parent
+        if random.random() < pytrees.mutation.CHANCE_NODE_DISTANCE:
+            distInc = random.random() * 30.0 - 15
+            self._dist += distInc
+
+            # Check for minimum distance
+            if self._dist < pytrees.mutation.MIN_NODE_DISTANCE:
+                self._dist = pytrees.mutation.MIN_NODE_DISTANCE
+
+            self.update_pos_absolute()
 
 
 class Tree(Drawable):
@@ -128,23 +219,28 @@ class Tree(Drawable):
         self,
         root: Pos,
     ) -> None:
-        self._root = root
-        self._root_node = TreeNode(
-            owner=self,
-            parent=None,
-            type=TreeNodeType.STRUCT,
-            pos=root,
-        )
-        self._root_node.add_child()
-
         self._fitness = 0
         self._nutrients = 0
         self._energy = 0
         self._fitness_percentage = 0
 
         self._age = 0
-        self._topleft = Pos(0, 0)
-        self._botright = Pos(0, 0)
+
+        self._root_node = TreeNode(
+            owner=self,
+            parent=None,
+            type=TreeNodeType.STRUCT,
+            pos=root,
+        )
+        self._root_node.mutate()
+
+        self._topleft, self._botright = self._root_node.get_pos_extremes()
+        self._nodes: set[TreeNode] = self._root_node.get_children_recursively()
 
     def draw(self, canvas: Canvas) -> None:
         self._root_node.draw_recursive(canvas)
+        canvas.create_rectangle(
+            self._topleft.tuple(),
+            self._botright.tuple(),
+            outline=PyTreeColor.BLACK.value,
+        )

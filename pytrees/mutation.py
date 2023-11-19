@@ -22,55 +22,15 @@
 # SOFTWARE.
 #############################################################################
 
+CHANCE_NODE_TYPE = 0.15
+CHANCE_NODE_TYPE_STRUCT = 0.60
 
-from enum import Enum
+CHANCE_NODE_ANGLE = 0.25
+CHANCE_NODE_DISTANCE = 0.15
+MIN_NODE_DISTANCE = 40.0
 
+CHANCE_NODE_SIZE = 0.30
+MIN_NODE_SIZE = 5
 
-class PyTreeColor(Enum):
-    SKY_BLUE = "#87CEEB"
-    GREEN = "#3BF818"
-    YELLOW = "#F8EE18"
-    BLUE = "#1756F8"
-    BROWN = "#964B00"
-    BLACK = "#000000"
-
-
-class Pos:
-
-    def __init__(
-        self,
-        x: int,
-        y: int,
-    ) -> None:
-        self.x = x
-        self.y = y
-
-    def __eq__(self, __value: object) -> bool:
-        if type(__value) is Pos:
-            return self.x == __value.x and self.y == __value.y
-        else:
-            return False
-
-    def __add__(self, __value: 'Pos') -> 'Pos':
-        return Pos(self.x + __value.x, self.y + __value.y)
-
-    def __sub__(self, __value: 'Pos') -> 'Pos':
-        return Pos(self.x - __value.x, self.y - __value.y)
-
-    def __hash__(self) -> int:
-        return hash(repr(self))
-
-    def tuple(self) -> tuple[int, int]:
-        return (self.x, self.y)
-
-
-Dims = Pos
-
-
-# class Bounds:
-
-#     def __init__(
-#         self,
-#         areas: list[tuple[Pos, Pos]]
-#     ) -> None:
-#         self._areas = areas
+CHANCE_NODE_DELETE = 0.10
+CHANCE_NODE_ADD = 0.30
