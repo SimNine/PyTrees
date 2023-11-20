@@ -26,6 +26,7 @@
 import tkinter
 
 from pytrees.drawable import Drawable
+from pytrees.utils import Pos, PyTreeColor
 
 
 class PyTreesCanvas:
@@ -47,8 +48,9 @@ class PyTreesCanvas:
         )
 
         # Register listeners
-        self._root.bind("<ButtonPress-1>", self.scroll_start)
-        self._root.bind("<B1-Motion>", self.scroll_move)
+        self._root.bind("<ButtonPress-1>", self.mouse_left_down)
+        self._root.bind("<ButtonRelease-1>", self.mouse_left_release)
+        self._root.bind("<B1-Motion>", self.mouse_left_drag)
         self._root.bind("<Configure>", self.resize)
         # self._root.bind('<MouseWheel>', self.wheel)  # with Windows and MacOS, but not Linux
         # self._root.bind('<Button-5>',   self.wheel)  # only with Linux, wheel scroll down
@@ -57,11 +59,20 @@ class PyTreesCanvas:
         # Show the canvas
         self._root.update()
 
-    def scroll_start(self, event):
+    def mouse_left_down(self, event):
+        self._left_mouse_dragging = False
         self._canvas.scan_mark(event.x, event.y)
 
-    def scroll_move(self, event):
+    def mouse_left_drag(self, event):
+        self._left_mouse_dragging = True
         self._canvas.scan_dragto(event.x, event.y, gain=1)
+
+    def mouse_left_release(self, event):
+        if not self._left_mouse_dragging:
+            self._canvas.last_click_pos = Pos(
+                self._canvas.canvasx(event.x),
+                self._canvas.canvasy(event.y)
+            )
 
     def resize(
         self,
