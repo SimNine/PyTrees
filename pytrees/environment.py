@@ -26,8 +26,7 @@
 from enum import Enum
 import math
 import random
-import tkinter
-from tkinter import Canvas
+from pytrees.display import PyTreesDisplay
 
 
 from pytrees.drawable import Drawable
@@ -121,9 +120,9 @@ class Environment(Drawable):
                     0,
                 ))
 
-    def draw(self, canvas: Canvas) -> None:
+    def draw(self, canvas: PyTreesDisplay) -> None:
         # Draw background
-        canvas.create_rectangle(
+        canvas.canvas().create_rectangle(
             (0, 0),
             self._dims.tuple(),
             fill=PyTreeColor.SKY_BLUE.value,
@@ -212,9 +211,9 @@ class Landscape(Drawable):
         self._ground_levels: list[int] = []
         self._populate_ground_levels()
 
-    def draw(self, canvas: Canvas) -> None:
+    def draw(self, canvas: PyTreesDisplay) -> None:
         for i, level in enumerate(self._ground_levels):
-            canvas.create_line(
+            canvas.canvas().create_line(
                 (i, level),
                 (i, self._dims.y),
                 fill=PyTreeColor.BROWN.value,
@@ -257,15 +256,16 @@ class Particle(Pos, Drawable):
 
     def draw(
         self,
-        canvas: tkinter.Canvas,
+        canvas: PyTreesDisplay,
     ) -> None:
-        canvas.create_rectangle(
+        tk_canvas = canvas.canvas()
+        tk_canvas.create_rectangle(
             self.x - 2, self.y - 2,
             self.x + 2, self.y + 2,
             fill=self._color,
         )
         if DEBUG:
-            canvas.create_text(
+            tk_canvas.create_text(
                 self.tuple(),
                 fill=PyTreeColor.BLACK.value,
                 text=str(self.power),

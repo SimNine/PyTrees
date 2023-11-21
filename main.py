@@ -27,17 +27,17 @@ import multiprocessing
 import time
 import tkinter
 from typing import Any
-from pytrees.canvas import PyTreesCanvas
+from pytrees.display import PyTreesDisplay
 from pytrees.environment import Environment
 
 
-def thread_visualize(queue: "multiprocessing.Queue[Any]") -> None:
-    treecanvas = PyTreesCanvas()
+def thread_visualize(queue: "multiprocessing.Queue[Environment]") -> None:
+    treecanvas = PyTreesDisplay()
     while True:
         environment = queue.get()
         try:
             treecanvas.clear()
-            treecanvas.draw(environment)
+            environment.draw(treecanvas)
             treecanvas.update()
         except tkinter.TclError as e:
             print(f"Tkinter exiting: {e}")

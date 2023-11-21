@@ -25,63 +25,87 @@
 
 import tkinter
 
-from pytrees.drawable import Drawable
 from pytrees.utils import Pos, PyTreeColor
 
 
-class PyTreesCanvas:
+class PyTreesDisplay:
 
     def __init__(self) -> None:
-        self._root = tkinter.Tk()
+        self._frame_world = tkinter.Tk()
+        self._frame_debug = tkinter.Tk()
 
         # Create canvas
-        self._canvas = tkinter.Canvas(
-            master=self._root,
+        self._canvas_world = tkinter.Canvas(
+            master=self._frame_world,
             bg="white",
             height=600,
             width=600,
             borderwidth=0,
             highlightthickness=0,
         )
-        self._canvas.pack(
+        self._canvas_world.pack(
             fill="both",
         )
 
+        self._canvas_debug = tkinter.Canvas(
+            master=self._frame_debug,
+            bg='white',
+            height=200,
+            width=400,
+            borderwidth=0,
+            highlightthickness=0,
+        )
+        self._canvas_debug.create_rectangle(20, 20, 70, 70, fill=PyTreeColor.YELLOW.value)
+
         # Register listeners
-        self._root.bind("<ButtonPress-1>", self.mouse_left_down)
-        self._root.bind("<ButtonRelease-1>", self.mouse_left_release)
-        self._root.bind("<B1-Motion>", self.mouse_left_drag)
-        self._root.bind("<Configure>", self.resize)
+        self._frame_world.bind("<ButtonPress-1>", self.mouse_left_down)
+        self._frame_world.bind("<ButtonRelease-1>", self.mouse_left_release)
+        self._frame_world.bind("<B1-Motion>", self.mouse_left_drag)
+        self._frame_world.bind("<Configure>", self.resize)
         # self._root.bind('<MouseWheel>', self.wheel)  # with Windows and MacOS, but not Linux
         # self._root.bind('<Button-5>',   self.wheel)  # only with Linux, wheel scroll down
         # self._root.bind('<Button-4>',   self.wheel)  # only with Linux, wheel scroll up
 
         # Show the canvas
-        self._root.update()
+        self.update()
 
-    def mouse_left_down(self, event):
+    def mouse_left_down(
+        self,
+        event: tkinter.Event,
+    ) -> None:
         self._left_mouse_dragging = False
-        self._canvas.scan_mark(event.x, event.y)
+        self._canvas_world.scan_mark(event.x, event.y)
 
-    def mouse_left_drag(self, event):
+    def mouse_left_drag(
+        self,
+        event: tkinter.Event,
+    ):
         self._left_mouse_dragging = True
-        self._canvas.scan_dragto(event.x, event.y, gain=1)
+        self._canvas_world.scan_dragto(event.x, event.y, gain=1)
 
-    def mouse_left_release(self, event):
+    def mouse_left_release(
+        self,
+        event: tkinter.Event,
+    ):
         if not self._left_mouse_dragging:
-            self._canvas.last_click_pos = Pos(
-                self._canvas.canvasx(event.x),
-                self._canvas.canvasy(event.y)
+            self.last_canvas_click_pos: Pos | None = Pos(
+                self._canvas_world.canvasx(event.x),
+                self._canvas_world.canvasy(event.y)
             )
 
     def resize(
         self,
         event: tkinter.Event,
     ):
-        self._canvas.config(
+        self._canvas_world.config(
             width=event.width,
             height=event.height,
         )
+
+    def canvas(
+        self,
+    ) -> tkinter.Canvas:
+        return self._canvas_world
 
     # def wheel(
     #     self,
@@ -101,16 +125,11 @@ class PyTreesCanvas:
 
     def update(
         self,
-    ):
-        self._canvas.update()
+    ) -> None:
+        self._frame_world.update()
+        self._frame_debug.update()
 
     def clear(
         self,
-    ):
-        self._canvas.delete("all")
-
-    def draw(
-        self,
-        item: Drawable,
     ) -> None:
-        item.draw(self._canvas)
+        self._canvas_world.delete("all")

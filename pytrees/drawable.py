@@ -24,7 +24,8 @@
 
 
 import abc
-import tkinter
+
+from pytrees.display import PyTreesDisplay
 
 
 class Drawable(abc.ABC):
@@ -32,6 +33,6 @@ class Drawable(abc.ABC):
     @abc.abstractmethod
     def draw(
         self,
-        canvas: tkinter.Canvas,
+        canvas: PyTreesDisplay,
     ) -> None:
         pass
