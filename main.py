@@ -29,16 +29,17 @@ import tkinter
 from typing import Any
 from pytrees.display import PyTreesDisplay
 from pytrees.environment import Environment
+from pytrees.state import PyTreesState
 
 
-def thread_visualize(queue: "multiprocessing.Queue[Environment]") -> None:
-    treecanvas = PyTreesDisplay()
+def thread_visualize(queue: "multiprocessing.Queue[PyTreesState]") -> None:
+    display = PyTreesDisplay()
     while True:
-        environment = queue.get()
+        state = queue.get()
         try:
-            treecanvas.clear()
-            environment.draw(treecanvas)
-            treecanvas.update()
+            display.clear()
+            state.draw(display)
+            display.update()
         except tkinter.TclError as e:
             print(f"Tkinter exiting: {e}")
             return
@@ -47,8 +48,11 @@ def thread_visualize(queue: "multiprocessing.Queue[Environment]") -> None:
 
 def main():
     environment = Environment()
+    state = PyTreesState(
+        env=environment,
+    )
 
-    data_queue: multiprocessing.Queue[Any] = multiprocessing.Queue(1)
+    data_queue: multiprocessing.Queue[PyTreesState] = multiprocessing.Queue(1)
 
     visualization_process = multiprocessing.Process(
         target=thread_visualize,
@@ -57,9 +61,9 @@ def main():
     visualization_process.start()
 
     while visualization_process.is_alive():
-        environment.tick()
+        state.tick()
         try:
-            data_queue.put_nowait(environment)
+            data_queue.put_nowait(state)
         except Exception:
             pass
         time.sleep(0.02)

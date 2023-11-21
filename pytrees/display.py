@@ -46,6 +46,7 @@ class PyTreesDisplay:
         self._canvas_world.pack(
             fill="both",
         )
+        self.last_canvas_click_pos = None
 
         self._canvas_debug = tkinter.Canvas(
             master=self._frame_debug,
@@ -55,13 +56,17 @@ class PyTreesDisplay:
             borderwidth=0,
             highlightthickness=0,
         )
-        self._canvas_debug.create_rectangle(20, 20, 70, 70, fill=PyTreeColor.YELLOW.value)
+        self._canvas_debug.pack(
+            fill="both",
+        )
+        # self._canvas_debug.create_rectangle(20, 20, 70, 70, fill=PyTreeColor.YELLOW.value)
 
         # Register listeners
         self._frame_world.bind("<ButtonPress-1>", self.mouse_left_down)
         self._frame_world.bind("<ButtonRelease-1>", self.mouse_left_release)
         self._frame_world.bind("<B1-Motion>", self.mouse_left_drag)
-        self._frame_world.bind("<Configure>", self.resize)
+        self._frame_world.bind("<Configure>", self.world_resize)
+        self._frame_debug.bind("<Configure>", self.debug_resize)
         # self._root.bind('<MouseWheel>', self.wheel)  # with Windows and MacOS, but not Linux
         # self._root.bind('<Button-5>',   self.wheel)  # only with Linux, wheel scroll down
         # self._root.bind('<Button-4>',   self.wheel)  # only with Linux, wheel scroll up
@@ -93,11 +98,20 @@ class PyTreesDisplay:
                 self._canvas_world.canvasy(event.y)
             )
 
-    def resize(
+    def world_resize(
         self,
         event: tkinter.Event,
     ):
         self._canvas_world.config(
+            width=event.width,
+            height=event.height,
+        )
+
+    def debug_resize(
+        self,
+        event: tkinter.Event,
+    ):
+        self._canvas_debug.config(
             width=event.width,
             height=event.height,
         )
@@ -133,3 +147,4 @@ class PyTreesDisplay:
         self,
     ) -> None:
         self._canvas_world.delete("all")
+        self._canvas_debug.delete("all")

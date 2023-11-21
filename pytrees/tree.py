@@ -26,10 +26,11 @@
 from enum import Enum
 import math
 import random
+import tkinter
 from typing import Optional
 from pytrees.display import PyTreesDisplay
 
-from pytrees.drawable import Drawable
+from pytrees.interfaces import Drawable
 import pytrees.mutation
 from pytrees.utils import DEBUG, Bounds, Pos, PyTreeColor
 
@@ -86,16 +87,16 @@ class TreeNode(Drawable):
             pos=None,
         ))
 
-    def draw(self, canvas: PyTreesDisplay) -> None:
-        canvas.canvas().create_oval(
+    def draw(self, canvas: tkinter.Canvas) -> None:
+        canvas.create_oval(
             (self._pos - Pos(self._size, self._size)).tuple(),
             (self._pos + Pos(self._size, self._size)).tuple(),
             fill=self._type.value.value,
         )
 
-    def draw_recursive(self, canvas: PyTreesDisplay) -> None:
+    def draw_recursive(self, canvas: tkinter.Canvas) -> None:
         for child in self._children:
-            canvas.canvas().create_line(
+            canvas.create_line(
                 self._pos.tuple(),
                 child._pos.tuple(),
                 fill=PyTreeColor.BLACK.value,
@@ -245,15 +246,15 @@ class Tree(Drawable):
         self.bounds = Bounds(*self._root_node.get_pos_extremes())
         self._nodes: set[TreeNode] = self._root_node.get_children_recursively()
 
-    def draw(self, canvas: PyTreesDisplay) -> None:
+    def draw(self, canvas: tkinter.Canvas) -> None:
         self._root_node.draw_recursive(canvas)
         if DEBUG:
-            canvas.canvas().create_rectangle(
+            canvas.create_rectangle(
                 self.bounds.topleft.tuple(),
                 self.bounds.botright.tuple(),
                 outline=PyTreeColor.BLACK.value,
             )
-            canvas.canvas().create_text(
+            canvas.create_text(
                 self.bounds.topleft.tuple(),
                 fill=PyTreeColor.ORANGE.value,
                 text=str(self._energy),

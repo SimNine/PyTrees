@@ -64,6 +64,9 @@ class Pos:
     def __hash__(self) -> int:
         return hash(repr(self))
 
+    def __repr__(self) -> str:
+        return f"({self.x},{self.y})"
+
     def tuple(self) -> tuple[int, int]:
         return (self.x, self.y)
 
