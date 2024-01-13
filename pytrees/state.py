@@ -27,6 +27,7 @@ from enum import Enum
 import math
 import random
 import tkinter
+from typing import Optional
 from pytrees.display import PyTreesDisplay
 
 
@@ -45,36 +46,36 @@ class PyTreesState(Tickable):
         env: Environment
     ) -> None:
         self.environment: Environment = env
-        self.last_selected_tree = None
+        self.last_selected_tree: Optional[Tree] = None
 
     def draw(
         self,
         disp: PyTreesDisplay
     ) -> None:
-        self.environment.draw(disp.canvas())
-        disp._canvas_debug.create_rectangle(
+        self.environment.draw(disp.canvas_world())
+        disp.canvas_debug().create_rectangle(
             20, 20, 50, 90,
             fill=PyTreeColor.BLUE.value,
         )
 
         if self.last_selected_tree:
-            self.last_selected_tree.draw(disp._canvas_debug)
+            self.last_selected_tree.draw(disp.canvas_debug())
 
         if clickpos := disp.last_canvas_click_pos:
             print(f"{clickpos=}")
             for tree in self.environment._trees:
                 if tree.bounds.contains(clickpos):
-                    # self.last_selected_tree = tree
-                    print("TREE MATCH!")
-                    disp._canvas_debug.scan_mark(0, 0)
-                    disp._canvas_debug.scan_dragto(
+                    self.last_selected_tree = tree
+                    # print("TREE MATCH!")
+                    disp.canvas_debug().scan_mark(0, 0)
+                    disp.canvas_debug().scan_dragto(
                         -tree._root_node._pos.x,
                         -tree._root_node._pos.y,
                         gain=1,
                     )
-                    tree.draw(disp._canvas_debug)
-                    disp._canvas_debug.scan_mark(0, 0)
-                    disp._canvas_debug.scan_dragto(
+                    tree.draw(disp.canvas_debug())
+                    disp.canvas_debug().scan_mark(0, 0)
+                    disp.canvas_debug().scan_dragto(
                         tree._root_node._pos.x,
                         tree._root_node._pos.y,
                         gain=1,

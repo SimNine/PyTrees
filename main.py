@@ -1,7 +1,7 @@
 #############################################################################
 # MIT License
 
-# Copyright (c) 2023 Chris Urffer
+# Copyright (c) 2023-2024 Chris Urffer
 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -52,6 +52,7 @@ def main():
         env=environment,
     )
 
+    # Create a queue to push the state onto every tick
     data_queue: multiprocessing.Queue[PyTreesState] = multiprocessing.Queue(1)
 
     visualization_process = multiprocessing.Process(

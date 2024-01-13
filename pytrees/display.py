@@ -116,10 +116,15 @@ class PyTreesDisplay:
             height=event.height,
         )
 
-    def canvas(
+    def canvas_world(
         self,
     ) -> tkinter.Canvas:
         return self._canvas_world
+
+    def canvas_debug(
+        self,
+    ) -> tkinter.Canvas:
+        return self._canvas_debug
 
     # def wheel(
     #     self,
