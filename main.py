@@ -26,7 +26,7 @@
 import multiprocessing
 import time
 import tkinter
-from typing import Any
+
 from pytrees.display import PyTreesDisplay
 from pytrees.environment import Environment
 from pytrees.state import PyTreesState

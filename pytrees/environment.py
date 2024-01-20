@@ -27,6 +27,8 @@ from enum import Enum
 import math
 import random
 import tkinter
+
+import pygame
 from pytrees.display import PyTreesDisplay
 
 
@@ -121,13 +123,14 @@ class Environment(Drawable):
                     0,
                 ))
 
-    def draw(self, canvas: tkinter.Canvas) -> None:
+    def draw(self, canvas: pygame.Surface) -> None:
         # Draw background
-        canvas.create_rectangle(
-            (0, 0),
-            self._dims.tuple(),
-            fill=PyTreeColor.SKY_BLUE.value,
-        )
+        canvas.fill(color=PyTreeColor.SKY_BLUE.value)
+        # canvas.create_rectangle(
+        #     (0, 0),
+        #     self._dims.tuple(),
+        #     fill=PyTreeColor.SKY_BLUE.value,
+        # )
 
         # Draw landscape
         self._landscape.draw(canvas)
@@ -212,7 +215,7 @@ class Landscape(Drawable):
         self._ground_levels: list[int] = []
         self._populate_ground_levels()
 
-    def draw(self, canvas: tkinter.Canvas) -> None:
+    def draw(self, canvas: pygame.Surface) -> None:
         for i, level in enumerate(self._ground_levels):
             canvas.create_line(
                 (i, level),
@@ -257,7 +260,7 @@ class Particle(Pos, Drawable):
 
     def draw(
         self,
-        canvas: tkinter.Canvas,
+        canvas: pygame.Surface,
     ) -> None:
         canvas.create_rectangle(
             self.x - 2, self.y - 2,

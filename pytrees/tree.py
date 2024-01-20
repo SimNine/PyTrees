@@ -28,6 +28,8 @@ import math
 import random
 import tkinter
 from typing import Optional
+
+import pygame
 from pytrees.display import PyTreesDisplay
 
 from pytrees.interfaces import Drawable
@@ -87,14 +89,14 @@ class TreeNode(Drawable):
             pos=None,
         ))
 
-    def draw(self, canvas: tkinter.Canvas) -> None:
+    def draw(self, canvas: pygame.Surface) -> None:
         canvas.create_oval(
             (self._pos - Pos(self._size, self._size)).tuple(),
             (self._pos + Pos(self._size, self._size)).tuple(),
             fill=self._type.value.value,
         )
 
-    def draw_recursive(self, canvas: tkinter.Canvas) -> None:
+    def draw_recursive(self, canvas: pygame.Surface) -> None:
         for child in self._children:
             canvas.create_line(
                 self._pos.tuple(),
@@ -246,7 +248,7 @@ class Tree(Drawable):
         self.bounds = Bounds(*self._root_node.get_pos_extremes())
         self._nodes: set[TreeNode] = self._root_node.get_children_recursively()
 
-    def draw(self, canvas: tkinter.Canvas) -> None:
+    def draw(self, canvas: pygame.Surface) -> None:
         self._root_node.draw_recursive(canvas)
         if DEBUG:
             canvas.create_rectangle(

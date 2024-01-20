@@ -26,13 +26,15 @@
 import abc
 import tkinter
 
+import pygame
+
 
 class Drawable(abc.ABC):
 
     @abc.abstractmethod
     def draw(
         self,
-        canvas: tkinter.Canvas,
+        canvas: pygame.Surface,
     ) -> None:
         raise NotImplementedError()
 
