@@ -28,13 +28,15 @@ import tkinter
 
 import pygame
 
+from pytrees.display import PyTreesDisplay
+
 
 class Drawable(abc.ABC):
 
     @abc.abstractmethod
     def draw(
         self,
-        canvas: pygame.Surface,
+        display: PyTreesDisplay,
     ) -> None:
         raise NotImplementedError()
 

@@ -24,6 +24,7 @@
 
 
 from enum import Enum
+from typing import Tuple
 
 
 DEBUG = True
@@ -37,6 +38,14 @@ class PyTreeColor(Enum):
     BROWN = "#964B00"
     BLACK = "#000000"
     ORANGE = "#F5A742"
+
+
+# class PyTreeColorNew(Enum):
+#     BLUE = (0, 0, 255)
+#     RED = (255, 0, 0)
+#     GREEN = (0, 255, 0)
+#     BLACK = (0, 0, 0)
+#     WHITE = (255, 255, 255)
 
 
 class Pos:

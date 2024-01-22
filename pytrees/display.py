@@ -23,17 +23,14 @@
 #############################################################################
 
 
-import tkinter
+import sys
+from typing import Optional
 
 import pygame
 
-from pytrees.utils import Pos, PyTreeColor
-
-BLUE  = (0, 0, 255)
-RED   = (255, 0, 0)
-GREEN = (0, 255, 0)
-BLACK = (0, 0, 0)
-WHITE = (255, 255, 255)
+from pytrees.utils import (
+    Pos, PyTreeColor
+)
 
 
 class PyTreesDisplay:
@@ -43,13 +40,20 @@ class PyTreesDisplay:
         # self._frame_debug = tkinter.Tk()
 
         pygame.init()
-        self._display_surface = pygame.display.set_mode((1200, 700))
-        self._display_surface.fill(WHITE)
+        self._display_surface = pygame.display.set_mode(
+            size=(1200, 700),
+            flags=pygame.RESIZABLE,
+        )
+        self._display_surface.fill(
+            color=PyTreeColor.SKY_BLUE.value
+        )
         pygame.display.set_caption("Game")
         pygame.display.flip()
 
+        self.offset = Pos(0, 0)
         self._mouse_state = [False, False, False]
         self._mouse_pos = (0, 0)
+        self._mousedown_pos: Optional[Pos] = None
 
         # while True:
         #     for event in pygame.event.get():
@@ -98,9 +102,21 @@ class PyTreesDisplay:
         self.update()
 
     def process_events(self) -> None:
+        # Poll all queue events
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                self._mousedown_pos = Pos(*pygame.mouse.get_pos()) + self.offset
+            elif event.type == pygame.MOUSEMOTION:
+                if self._mousedown_pos is not None:
+                    self.offset = self._mousedown_pos - Pos(*event.pos)
+            elif event.type == pygame.MOUSEBUTTONUP:
+                self._mousedown_pos = None
+
         # Get new mouse state
         mouse_state_new = pygame.mouse.get_pressed()
-        mouse_pos_new = pygame.mouse.get_pos()
 
         # Check for mouse button state changes
         if (
@@ -109,31 +125,31 @@ class PyTreesDisplay:
         ):
             # Left click
             pass
-            self._canvas_world.scan_mark(event.x, event.y)
+            # self._canvas_world.scan_mark(event.x, event.y)
         elif (
             self._mouse_state[0] is True and
             mouse_state_new[0] is True
         ):
             # Mouse drag
             pass
-            self._left_mouse_dragging = True
-            self._canvas_world.scan_dragto(event.x, event.y, gain=1)
+            # self._left_mouse_dragging = True
+            # self._canvas_world.scan_dragto(event.x, event.y, gain=1)
         elif (
             self._mouse_state is True and
             mouse_state_new[0] is False
         ):
             # Mouse release
             pass
-            if not self._left_mouse_dragging:
-                self.last_canvas_click_pos: Pos | None = Pos(
-                    self._canvas_world.canvasx(event.x),
-                    self._canvas_world.canvasy(event.y)
-                )
-            self._left_mouse_dragging = False
+            # if not self._left_mouse_dragging:
+            #     self.last_canvas_click_pos: Pos | None = Pos(
+            #         self._canvas_world.canvasx(event.x),
+            #         self._canvas_world.canvasy(event.y)
+            #     )
+            # self._left_mouse_dragging = False
 
         # Refresh mouse state
         self._mouse_state = mouse_state_new
-        self._mouse_pos = mouse_pos_new
+        # self._mouse_pos = mouse_pos_new
 
     # def world_resize(
     #     self,
@@ -153,6 +169,7 @@ class PyTreesDisplay:
     #         height=event.height,
     #     )
 
+    @property
     def surface(
         self,
     ) -> pygame.Surface:

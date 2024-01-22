@@ -24,50 +24,56 @@
 
 
 import multiprocessing
+import queue
 import time
-import tkinter
+from typing import Optional
 
 from pytrees.display import PyTreesDisplay
-from pytrees.environment import Environment
 from pytrees.state import PyTreesState
 
 
-def thread_visualize(queue: "multiprocessing.Queue[PyTreesState]") -> None:
+def thread_visualize(mp_queue: "multiprocessing.Queue[PyTreesState]") -> None:
     display = PyTreesDisplay()
+    state: Optional[PyTreesState] = None
     while True:
-        state = queue.get()
         try:
-            display.clear()
-            state.draw(display)
+            state = mp_queue.get(block=False)
+        except queue.Empty:
+            pass
+
+        try:
+            # display.clear()
+            if state is not None:
+                state.draw(display)
+            display.process_events()
             display.update()
-        except tkinter.TclError as e:
-            print(f"Tkinter exiting: {e}")
-            return
-        time.sleep(0.05)  # 20 FPS cap
+        except Exception as e:
+            print(f"Renderer exiting: {e}")
+            raise
+        # time.sleep(0.05)  # 20 FPS cap
 
 
 def main():
-    environment = Environment()
-    state = PyTreesState(
-        env=environment,
-    )
+    state = PyTreesState()
 
     # Create a queue to push the state onto every tick
     data_queue: multiprocessing.Queue[PyTreesState] = multiprocessing.Queue(1)
 
+    # Create a new thread for rendering
     visualization_process = multiprocessing.Process(
         target=thread_visualize,
         args=[data_queue],
     )
     visualization_process.start()
 
+    # Continually tick the state
     while visualization_process.is_alive():
         state.tick()
         try:
             data_queue.put_nowait(state)
         except Exception:
             pass
-        time.sleep(0.02)
+        # time.sleep(0.02)
 
 
 if __name__ == '__main__':

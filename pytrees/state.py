@@ -43,16 +43,15 @@ class PyTreesState(Tickable):
 
     def __init__(
         self,
-        env: Environment
     ) -> None:
-        self.environment: Environment = env
+        self.environment: Environment = Environment()
         self.last_selected_tree: Optional[Tree] = None
 
     def draw(
         self,
         disp: PyTreesDisplay
     ) -> None:
-        self.environment.draw(disp.surface())
+        self.environment.draw(disp)
         # disp.canvas_debug().create_rectangle(
         #     20, 20, 50, 90,
         #     fill=PyTreeColor.BLUE.value,

@@ -26,7 +26,6 @@
 from enum import Enum
 import math
 import random
-import tkinter
 
 import pygame
 from pytrees.display import PyTreesDisplay
@@ -123,29 +122,24 @@ class Environment(Drawable):
                     0,
                 ))
 
-    def draw(self, canvas: pygame.Surface) -> None:
+    def draw(self, display: PyTreesDisplay) -> None:
         # Draw background
-        canvas.fill(color=PyTreeColor.SKY_BLUE.value)
-        # canvas.create_rectangle(
-        #     (0, 0),
-        #     self._dims.tuple(),
-        #     fill=PyTreeColor.SKY_BLUE.value,
-        # )
+        display.surface.fill(color=PyTreeColor.SKY_BLUE.value)
 
         # Draw landscape
-        self._landscape.draw(canvas)
+        self._landscape.draw(display)
 
         # Draw trees
         for tree in self._trees:
-            tree.draw(canvas)
+            tree.draw(display)
 
         # Draw sun particles
         for particle_sun in self._particles_sun:
-            particle_sun.draw(canvas)
+            particle_sun.draw(display)
 
         # Draw water particles
         for particle_water in self._particles_water:
-            particle_water.draw(canvas)
+            particle_water.draw(display)
 
     def tick(self) -> None:
         self._add_new_particles(2, ParticleType.SUN)
@@ -215,12 +209,13 @@ class Landscape(Drawable):
         self._ground_levels: list[int] = []
         self._populate_ground_levels()
 
-    def draw(self, canvas: pygame.Surface) -> None:
+    def draw(self, display: PyTreesDisplay) -> None:
         for i, level in enumerate(self._ground_levels):
-            canvas.create_line(
-                (i, level),
-                (i, self._dims.y),
-                fill=PyTreeColor.BROWN.value,
+            pygame.draw.line(
+                surface=display.surface,
+                color=PyTreeColor.BROWN.value,
+                start_pos=(Pos(i, level) - display.offset).tuple(),
+                end_pos=(Pos(i, self._dims.y) - display.offset).tuple(),
             )
 
     def _populate_ground_levels(self) -> None:
@@ -257,22 +252,26 @@ class Particle(Pos, Drawable):
         self._color = color
         self.spent = False
         self.power = power
+        self.diameter = 5
 
     def draw(
         self,
-        canvas: pygame.Surface,
+        display: PyTreesDisplay,
     ) -> None:
-        canvas.create_rectangle(
-            self.x - 2, self.y - 2,
-            self.x + 2, self.y + 2,
-            fill=self._color,
+        pygame.draw.rect(
+            surface=display.surface,
+            color=self._color,
+            rect=pygame.Rect(
+                (Pos(self.x, self.y) - display.offset).tuple(),
+                (self.diameter, self.diameter),
+            ),
         )
-        if DEBUG:
-            canvas.create_text(
-                self.tuple(),
-                fill=PyTreeColor.BLACK.value,
-                text=str(self.power),
-            )
+        # if DEBUG:
+        #     display.surface.create_text(
+        #         self.tuple(),
+        #         fill=PyTreeColor.BLACK.value,
+        #         text=str(self.power),
+        #     )
 
     def tick(
         self,
