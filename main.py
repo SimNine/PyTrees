@@ -27,23 +27,28 @@ import multiprocessing
 import queue
 from typing import Optional
 
-from pytrees.display import PyTreesDisplay
+from pytrees.display import PyTreesDisplay, PyTreesEvent
 from pytrees.state import PyTreesState
 
 
-def thread_visualize(mp_queue: "multiprocessing.Queue[PyTreesState]") -> None:
+def thread_visualize(
+    input_queue: "multiprocessing.Queue[PyTreesState]",
+    output_queue: "multiprocessing.Queue[PyTreesEvent]",
+) -> None:
     display = PyTreesDisplay()
     state: Optional[PyTreesState] = None
     while True:
         try:
-            state = mp_queue.get(block=False)
+            state = input_queue.get(block=False)
         except queue.Empty:
             pass
 
         try:
             if state is not None:
                 display.draw(state)
-            display.process_events(state)
+                events = display.process_events(state)
+                for event in events:
+                    output_queue.put_nowait(event)
             display.update()
         except Exception as e:
             print(f"Renderer exiting: {e}")
@@ -55,12 +60,13 @@ def main():
     state = PyTreesState()
 
     # Create a queue to push the state onto every tick
-    data_queue: multiprocessing.Queue[PyTreesState] = multiprocessing.Queue(1)
+    window_input_queue: multiprocessing.Queue[PyTreesState] = multiprocessing.Queue(1)
+    window_output_queue: multiprocessing.Queue[PyTreesEvent] = multiprocessing.Queue(20)
 
     # Create a new thread for rendering
     visualization_process = multiprocessing.Process(
         target=thread_visualize,
-        args=[data_queue],
+        args=[window_input_queue, window_output_queue],
     )
     visualization_process.start()
 
@@ -68,7 +74,14 @@ def main():
     while visualization_process.is_alive():
         state.tick()
         try:
-            data_queue.put_nowait(state)
+            while True:
+                try:
+                    event = window_output_queue.get(block=False)
+                    state.process_event(event)
+                except queue.Empty:
+                    break
+
+            window_input_queue.put_nowait(state)
         except Exception:
             pass
         # time.sleep(0.02)

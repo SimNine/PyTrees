@@ -23,6 +23,7 @@
 #############################################################################
 
 
+from enum import Enum
 import sys
 from typing import Optional
 
@@ -31,6 +32,10 @@ import pygame
 from pytrees.utils import (
     Dims, Pos, PyTreeColor
 )
+
+
+class PyTreesEvent(Enum):
+    TOGGLE_TICK = "p"
 
 
 class PyTreesDisplay:
@@ -69,7 +74,9 @@ class PyTreesDisplay:
     def process_events(
         self,
         state: "PyTreesState",
-    ) -> None:
+    ) -> set[PyTreesEvent]:
+        returned_events: set[PyTreesEvent] = set()
+
         # Poll all queue events
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -92,6 +99,10 @@ class PyTreesDisplay:
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_d:
                     self.debug = not self.debug
+                elif event.key == pygame.K_p:
+                    returned_events.add(PyTreesEvent.TOGGLE_TICK)
+
+        return returned_events
 
     def _click(
         self,

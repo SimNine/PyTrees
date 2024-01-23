@@ -33,6 +33,7 @@ class PyTreesState(Tickable):
         self,
     ) -> None:
         self.environment: Environment = Environment()
+        self.ticking = True
 
     def draw(
         self,
@@ -43,6 +44,14 @@ class PyTreesState(Tickable):
     def tick(
         self,
     ) -> None:
-        self.environment.tick()
+        if self.ticking:
+            self.environment.tick()
 
-from pytrees.display import PyTreesDisplay
+    def process_event(
+        self,
+        event: "PyTreesEvent",
+    ) -> None:
+        if event == PyTreesEvent.TOGGLE_TICK:
+            self.ticking = not self.ticking
+
+from pytrees.display import PyTreesDisplay, PyTreesEvent
