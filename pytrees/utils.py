@@ -106,6 +106,10 @@ class Bounds:
         )
 
 
+# Dict for cacheing existing fonts of a size
+font_dict: dict[int, pygame.font.Font] = {}
+
+
 def draw_text(
     surface: Surface,
     left_top: Pos,
@@ -113,25 +117,19 @@ def draw_text(
     fontsize: int,
     color: PyTreeColor = PyTreeColor.BLACK,
 ):
-    # create a font object.
-    # 1st parameter is the font file
-    # which is present in pygame.
-    # 2nd parameter is size of the font
-    font = pygame.font.Font('freesansbold.ttf', fontsize)
+    # Create a font if one does not yet exist
+    if fontsize not in font_dict:
+        font_dict[fontsize] = pygame.font.Font('freesansbold.ttf', fontsize)
+    font = font_dict[fontsize]
 
-    # create a text surface object,
-    # on which text is drawn on it.
+    # Render some text on a new surface
     text_surface = font.render(text, True, color.value)
 
-    # create a rectangular object for the
-    # text surface object
+    # Get the rectangular bounds of the text surface
     text_surface_bounds = text_surface.get_rect()
 
-    # set the center of the rectangular object.
-    # textRect.center = (X // 2, Y // 2)
+    # Set an anchor for this text surface's bounds
     text_surface_bounds.topleft = left_top.tuple()
 
-    # copying the text surface object
-    # to the display surface object
-    # at the center coordinate.
+    # Copy the text surface to the main surface
     surface.blit(text_surface, text_surface_bounds)
