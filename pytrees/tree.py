@@ -26,7 +26,6 @@
 from enum import Enum
 import math
 import random
-import tkinter
 from typing import Optional
 
 import pygame
@@ -34,13 +33,13 @@ from pytrees.display import PyTreesDisplay
 
 from pytrees.interfaces import Drawable
 import pytrees.mutation
-from pytrees.utils import DEBUG, Bounds, Pos, PyTreeColor
+from pytrees.utils import Bounds, Pos, PyTreeColor, draw_text
 
 
 class TreeNodeType(Enum):
     STRUCT = PyTreeColor.BLACK
     LEAF = PyTreeColor.GREEN
-    ROOT = PyTreeColor.BROWN
+    ROOT = PyTreeColor.BROWN_LIGHT
     WATERCATCHER = PyTreeColor.BLUE
 
 
@@ -95,16 +94,17 @@ class TreeNode(Drawable):
             color=self._type.value.value,
             center=(self._pos - display.offset).tuple(),
             radius=self._size,
-            # rect=pygame.Rect(
-            #     left_top=(self._pos - Pos(self._size, self._size)).tuple(),
-            #     width_height=(self._pos + Pos(self._size, self._size)).tuple(),
-            # )
         )
-        # canvas.create_oval(
-        #     (self._pos - Pos(self._size, self._size)).tuple(),
-        #     (self._pos + Pos(self._size, self._size)).tuple(),
-        #     fill=self._type.value.value,
-        # )
+        if display.debug:
+            pygame.draw.rect(
+                surface=display.surface,
+                color=PyTreeColor.BLACK.value,
+                rect=pygame.Rect(
+                    (self._pos - display.offset).tuple(),
+                    Pos(self._size, self._size).tuple(),
+                ),
+                width=1,
+            )
 
     def draw_recursive(self, display: PyTreesDisplay) -> None:
         for child in self._children:
@@ -114,11 +114,6 @@ class TreeNode(Drawable):
                 start_pos=(self._pos - display.offset).tuple(),
                 end_pos=(child._pos - display.offset).tuple(),
             )
-            # canvas.create_line(
-            #     self._pos.tuple(),
-            #     child._pos.tuple(),
-            #     fill=PyTreeColor.BLACK.value,
-            # )
             child.draw_recursive(display)
         self.draw(display)
 
@@ -266,14 +261,24 @@ class Tree(Drawable):
 
     def draw(self, display: PyTreesDisplay) -> None:
         self._root_node.draw_recursive(display)
-        # if DEBUG:
-        #     canvas.create_rectangle(
-        #         self.bounds.topleft.tuple(),
-        #         self.bounds.botright.tuple(),
-        #         outline=PyTreeColor.BLACK.value,
-        #     )
-        #     canvas.create_text(
-        #         self.bounds.topleft.tuple(),
-        #         fill=PyTreeColor.ORANGE.value,
-        #         text=str(self._energy),
-        #     )
+        if display.debug:
+            pygame.draw.rect(
+                surface=display.surface,
+                color=PyTreeColor.BLACK.value,
+                rect=pygame.Rect(
+                    (self.bounds.topleft - display.offset).tuple(),
+                    (self.bounds.botright - self.bounds.topleft).tuple(),
+                ),
+                width=1,
+            )
+            draw_text(
+                surface=display.surface,
+                left_top=(self.bounds.topleft - display.offset),
+                text=str(self._energy),
+                fontsize=10,
+            )
+            # canvas.create_text(
+            #     self.bounds.topleft.tuple(),
+            #     fill=PyTreeColor.ORANGE.value,
+            #     text=str(self._energy),
+            # )

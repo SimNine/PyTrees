@@ -1,7 +1,7 @@
 #############################################################################
 # MIT License
 
-# Copyright (c) 2023 Chris Urffer
+# Copyright (c) 2023-2024 Chris Urffer
 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -34,7 +34,7 @@ from pytrees.display import PyTreesDisplay
 from pytrees.interfaces import Drawable
 from pytrees.tree import Tree
 from pytrees.utils import (
-    DEBUG, Pos, Dims, PyTreeColor,
+    Pos, Dims, PyTreeColor,
 )
 
 
@@ -125,6 +125,17 @@ class Environment(Drawable):
     def draw(self, display: PyTreesDisplay) -> None:
         # Draw background
         display.surface.fill(color=PyTreeColor.SKY_BLUE.value)
+
+        # Draw bounding box
+        pygame.draw.rect(
+            surface=display.surface,
+            color=PyTreeColor.BLACK.value,
+            rect=pygame.Rect(
+                (-display.offset).tuple(),
+                self._dims.tuple(),
+            ),
+            width=1,
+        )
 
         # Draw landscape
         self._landscape.draw(display)
@@ -262,7 +273,7 @@ class Particle(Pos, Drawable):
             surface=display.surface,
             color=self._color,
             rect=pygame.Rect(
-                (Pos(self.x, self.y) - display.offset).tuple(),
+                (Pos(self.x, self.y) - display.offset - Pos(2, 2)).tuple(),
                 (self.diameter, self.diameter),
             ),
         )

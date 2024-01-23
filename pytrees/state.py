@@ -1,7 +1,7 @@
 #############################################################################
 # MIT License
 
-# Copyright (c) 2023 Chris Urffer
+# Copyright (c) 2023-2024 Chris Urffer
 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -26,7 +26,6 @@
 from enum import Enum
 import math
 import random
-import tkinter
 from typing import Optional
 from pytrees.display import PyTreesDisplay
 
