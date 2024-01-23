@@ -35,7 +35,7 @@ from pytrees.display import PyTreesDisplay
 from pytrees.interfaces import Drawable
 from pytrees.tree import Tree
 from pytrees.utils import (
-    Pos, Dims, PyTreeColor,
+    Pos, Dims, PyTreeColor, draw_text,
 )
 
 
@@ -55,7 +55,7 @@ class Environment(Drawable):
     def __init__(self) -> None:
         self._dims = Dims(self.WIDTH, self.HEIGHT)
 
-        self._trees: set[Tree] = set()
+        self._trees: list[Tree] = []
 
         self._particles_sun: set[Particle] = set()
         self._particles_water: set[Particle] = set()
@@ -92,7 +92,7 @@ class Environment(Drawable):
         # Create trees
         for _ in range(self.NUM_TREES_STARTING):
             x_pos = random.randint(0, self.WIDTH)
-            self._trees.add(Tree(
+            self._trees.append(Tree(
                 Pos(
                     x_pos,
                     self._landscape._ground_levels[x_pos],
@@ -286,10 +286,17 @@ class Particle(Pos, Drawable):
             surface=display.surface,
             color=self._color,
             rect=pygame.Rect(
-                (Pos(self.x, self.y) - display.offset - Pos(2, 2)).tuple(),
+                (self - display.offset - Pos(2, 2)).tuple(),
                 (self.diameter, self.diameter),
             ),
         )
+        if display.debug:
+            draw_text(
+                surface=display.surface,
+                left_top=(self - display.offset),
+                text=str(self.power),
+                fontsize=10,
+            )
         # if DEBUG:
         #     display.surface.create_text(
         #         self.tuple(),
