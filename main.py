@@ -25,6 +25,7 @@
 
 import multiprocessing
 import queue
+import time
 from typing import Optional
 
 from pytrees.display import PyTreesDisplay, PyTreesEvent
@@ -71,6 +72,8 @@ def main():
     visualization_process.start()
 
     # Continually tick the state
+    time_curr = time.time()
+    num_ticks_this_sec = 0
     while visualization_process.is_alive():
         state.tick()
         try:
@@ -84,7 +87,12 @@ def main():
             window_input_queue.put_nowait(state)
         except Exception:
             pass
-        # time.sleep(0.02)
+        tick_end = time.time()
+        num_ticks_this_sec += 1
+        if tick_end - time_curr >= 1:
+            print(f"{num_ticks_this_sec} ticks in {tick_end - time_curr} sec")
+            num_ticks_this_sec = 0
+            time_curr = tick_end
 
 
 if __name__ == '__main__':
