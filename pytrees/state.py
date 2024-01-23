@@ -23,21 +23,8 @@
 #############################################################################
 
 
-from enum import Enum
-import math
-import random
-from typing import Optional
-
-import pygame
-from pytrees.display import PyTreesDisplay
-
-
-from pytrees.interfaces import Drawable, Tickable
+from pytrees.interfaces import Tickable
 from pytrees.environment import Environment
-from pytrees.tree import Tree
-from pytrees.utils import (
-    DEBUG, Pos, Dims, PyTreeColor,
-)
 
 
 class PyTreesState(Tickable):
@@ -46,33 +33,16 @@ class PyTreesState(Tickable):
         self,
     ) -> None:
         self.environment: Environment = Environment()
-        # self.last_selected_tree: Optional[Tree] = None
 
     def draw(
         self,
-        disp: PyTreesDisplay
+        disp: "PyTreesDisplay"
     ) -> None:
         self.environment.draw(disp)
-
-        # Check if a tree has been clicked
-        # TODO: improve this by storing state elsewhere
-        for tree in self.environment._trees:
-            if tree.bounds.contains(disp.mouse_click_world):
-                pygame.draw.rect(
-                    surface=disp.surface,
-                    color=PyTreeColor.WHITE.value,
-                    rect=pygame.Rect(
-                        Pos(0, 0).tuple(),
-                        (tree.bounds.botright - tree.bounds.topleft + Dims(20, 20)).tuple()
-                    ),
-                )
-                tree.draw(
-                    display=disp,
-                    offset=tree.bounds.topleft - Pos(10, 10),
-                )
-                break
 
     def tick(
         self,
     ) -> None:
         self.environment.tick()
+
+from pytrees.display import PyTreesDisplay

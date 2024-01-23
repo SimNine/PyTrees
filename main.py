@@ -25,7 +25,6 @@
 
 import multiprocessing
 import queue
-import time
 from typing import Optional
 
 from pytrees.display import PyTreesDisplay
@@ -42,10 +41,9 @@ def thread_visualize(mp_queue: "multiprocessing.Queue[PyTreesState]") -> None:
             pass
 
         try:
-            # display.clear()
             if state is not None:
-                state.draw(display)
-            display.process_events()
+                display.draw(state)
+            display.process_events(state)
             display.update()
         except Exception as e:
             print(f"Renderer exiting: {e}")

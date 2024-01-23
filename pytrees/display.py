@@ -24,11 +24,12 @@
 
 
 import sys
+from typing import Optional
 
 import pygame
 
 from pytrees.utils import (
-    Pos, PyTreeColor
+    Dims, Pos, PyTreeColor
 )
 
 
@@ -46,20 +47,29 @@ class PyTreesDisplay:
         pygame.display.set_caption("Game")
         pygame.display.flip()
 
+        # Store display state
         self.offset = Pos(0, 0)
         self.debug = False
 
+        # Store mouse state primitives
         self._mouse_buttons_pressed = [False, False, False]
         self._mouse_pos = Pos(0, 0)
         self._mouse_pos_prev = Pos(0, 0)
 
+        # Store most recent mouse click positions
         self.mouse_click_screen = Pos(0, 0)
         self.mouse_click_world = Pos(0, 0)
 
         # Show the canvas
         self.update()
 
-    def process_events(self) -> None:
+        # Store misc state
+        self.clicked_tree: Optional[Tree] = None
+
+    def process_events(
+        self,
+        state: "PyTreesState",
+    ) -> None:
         # Poll all queue events
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -77,10 +87,47 @@ class PyTreesDisplay:
                 if self._mouse_pos == self._mouse_pos_prev:
                     self.mouse_click_screen = self._mouse_pos
                     self.mouse_click_world = self._mouse_pos + self.offset
+                    self._click(state)
                 self._mouse_pos = self._mouse_pos_prev = Pos(*event.pos)
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_d:
                     self.debug = not self.debug
+
+    def _click(
+        self,
+        state: "PyTreesState",
+    ) -> None:
+        # Check if a tree has been clicked
+        for tree in state.environment._trees:
+            if tree.bounds.contains(self.mouse_click_world):
+                self.clicked_tree = tree
+                break
+
+    def draw(
+        self,
+        state: "PyTreesState",
+    ) -> None:
+        # Draw the state
+        state.draw(self)
+
+        # Draw overlay information
+        if self.clicked_tree:
+            pygame.draw.rect(
+                surface=self.surface,
+                color=PyTreeColor.WHITE.value,
+                rect=pygame.Rect(
+                    Pos(0, 0).tuple(),
+                    (
+                        self.clicked_tree.bounds.botright -
+                        self.clicked_tree.bounds.topleft +
+                        Dims(20, 20)
+                    ).tuple()
+                ),
+            )
+            self.clicked_tree.draw(
+                display=self,
+                offset=self.clicked_tree.bounds.topleft - Pos(10, 10),
+            )
 
     @property
     def surface(
@@ -92,3 +139,6 @@ class PyTreesDisplay:
         self,
     ) -> None:
         pygame.display.flip()
+
+from pytrees.state import PyTreesState
+from pytrees.tree import Tree

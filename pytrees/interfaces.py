@@ -26,7 +26,6 @@
 import abc
 from typing import Optional
 
-from pytrees.display import PyTreesDisplay
 from pytrees.utils import Pos
 
 
@@ -35,7 +34,7 @@ class Drawable(abc.ABC):
     @abc.abstractmethod
     def draw(
         self,
-        display: PyTreesDisplay,
+        display: "PyTreesDisplay",
         offset: Optional[Pos] = None
     ) -> None:
         raise NotImplementedError()
@@ -48,3 +47,6 @@ class Tickable(abc.ABC):
         self,
     ) -> None:
         raise NotImplementedError()
+
+
+from pytrees.display import PyTreesDisplay
