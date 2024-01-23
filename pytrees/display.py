@@ -50,9 +50,10 @@ class PyTreesDisplay:
         self.offset = Pos(0, 0)
         self.debug = False
 
-        self._mouse_state = [False, False, False]
-        self._mouse_pos = (0, 0)
-        self._mousedown_pos: Optional[Pos] = None
+        self._mouse_buttons_pressed = [False, False, False]
+        self._mouse_pos = Pos(0, 0)
+        self._mouse_pos_prev = Pos(0, 0)
+        self._mouse_click = Pos(0, 0)
 
         # Show the canvas
         self.update()
@@ -64,12 +65,17 @@ class PyTreesDisplay:
                 pygame.quit()
                 sys.exit()
             elif event.type == pygame.MOUSEBUTTONDOWN:
-                self._mousedown_pos = Pos(*pygame.mouse.get_pos()) + self.offset
+                self._mouse_buttons_pressed[0] = True
+                self._mouse_pos = self._mouse_pos_prev = Pos(*event.pos)
             elif event.type == pygame.MOUSEMOTION:
-                if self._mousedown_pos is not None:
-                    self.offset = self._mousedown_pos - Pos(*event.pos)
+                if self._mouse_buttons_pressed[0]:
+                    self.offset = self._mouse_pos_prev - Pos(*event.pos) + self.offset
+                self._mouse_pos_prev = Pos(*event.pos)
             elif event.type == pygame.MOUSEBUTTONUP:
-                self._mousedown_pos = None
+                self._mouse_buttons_pressed[0] = False
+                if self._mouse_pos == self._mouse_pos_prev:
+                    self._mouse_click = self._mouse_pos
+                self._mouse_pos = self._mouse_pos_prev = Pos(*event.pos)
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_d:
                     self.debug = not self.debug
