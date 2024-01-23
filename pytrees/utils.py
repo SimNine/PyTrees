@@ -42,6 +42,7 @@ class PyTreeColor(Enum):
     BLACK = "#000000"
     ORANGE = "#F5A742"
     CLEAR = (255, 255, 255, 255)
+    WHITE = (255, 255, 255)
 
 
 class Pos:
@@ -60,6 +61,12 @@ class Pos:
             return self.x == __value.x and self.y == __value.y
         else:
             return False
+
+    def __ne__(self, __value: object) -> bool:
+        if type(__value) is Pos:
+            return self.x != __value.x or self.y != __value.y
+        else:
+            return True
 
     # Math
     def __add__(self, __value: 'Pos') -> 'Pos':

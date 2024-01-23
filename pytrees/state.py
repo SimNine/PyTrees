@@ -27,6 +27,8 @@ from enum import Enum
 import math
 import random
 from typing import Optional
+
+import pygame
 from pytrees.display import PyTreesDisplay
 
 
@@ -44,13 +46,42 @@ class PyTreesState(Tickable):
         self,
     ) -> None:
         self.environment: Environment = Environment()
-        self.last_selected_tree: Optional[Tree] = None
+        # self.last_selected_tree: Optional[Tree] = None
 
     def draw(
         self,
         disp: PyTreesDisplay
     ) -> None:
         self.environment.draw(disp)
+
+        # Get the most recently clicked tree, if there is one
+        if disp.mouse_click_screen:
+            for tree in self.environment._trees:
+                if tree.bounds.contains(disp.mouse_click_world):
+                    pygame.draw.rect(
+                        surface=disp.surface,
+                        color=PyTreeColor.WHITE.value,
+                        rect=pygame.Rect(
+                            Pos(0, 0).tuple(),
+                            (tree.bounds.botright - tree.bounds.topleft + Dims(20, 20)).tuple()
+                        ),
+                    )
+                    # disp.canvas_debug().scan_mark(0, 0)
+                    # disp.canvas_debug().scan_dragto(
+                    #     -tree._root_node._pos.x,
+                    #     -tree._root_node._pos.y,
+                    #     gain=1,
+                    # )
+                    # tree.draw(disp.canvas_debug())
+                    # disp.canvas_debug().scan_mark(0, 0)
+                    # disp.canvas_debug().scan_dragto(
+                    #     tree._root_node._pos.x,
+                    #     tree._root_node._pos.y,
+                    #     gain=1,
+                    # )
+                    break
+        # print(f"mouse click {disp.click_pos_prev} -> {disp.click_pos}")
+
         # disp.canvas_debug().create_rectangle(
         #     20, 20, 50, 90,
         #     fill=PyTreeColor.BLUE.value,
@@ -58,27 +89,6 @@ class PyTreesState(Tickable):
 
         # if self.last_selected_tree:
         #     self.last_selected_tree.draw(disp.canvas_debug())
-
-        # if clickpos := disp.last_canvas_click_pos:
-        #     print(f"{clickpos=}")
-        #     for tree in self.environment._trees:
-        #         if tree.bounds.contains(clickpos):
-        #             self.last_selected_tree = tree
-        #             # print("TREE MATCH!")
-        #             disp.canvas_debug().scan_mark(0, 0)
-        #             disp.canvas_debug().scan_dragto(
-        #                 -tree._root_node._pos.x,
-        #                 -tree._root_node._pos.y,
-        #                 gain=1,
-        #             )
-        #             tree.draw(disp.canvas_debug())
-        #             disp.canvas_debug().scan_mark(0, 0)
-        #             disp.canvas_debug().scan_dragto(
-        #                 tree._root_node._pos.x,
-        #                 tree._root_node._pos.y,
-        #                 gain=1,
-        #             )
-        #             break
 
     def tick(
         self,

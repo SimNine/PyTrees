@@ -53,7 +53,9 @@ class PyTreesDisplay:
         self._mouse_buttons_pressed = [False, False, False]
         self._mouse_pos = Pos(0, 0)
         self._mouse_pos_prev = Pos(0, 0)
-        self._mouse_click = Pos(0, 0)
+
+        self.mouse_click_screen = Pos(0, 0)
+        self.mouse_click_world = Pos(0, 0)
 
         # Show the canvas
         self.update()
@@ -74,7 +76,8 @@ class PyTreesDisplay:
             elif event.type == pygame.MOUSEBUTTONUP:
                 self._mouse_buttons_pressed[0] = False
                 if self._mouse_pos == self._mouse_pos_prev:
-                    self._mouse_click = self._mouse_pos
+                    self.mouse_click_screen = self._mouse_pos
+                    self.mouse_click_world = self._mouse_pos + self.offset
                 self._mouse_pos = self._mouse_pos_prev = Pos(*event.pos)
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_d:
