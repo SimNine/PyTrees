@@ -88,11 +88,18 @@ class TreeNode(Drawable):
             pos=None,
         ))
 
-    def draw(self, display: PyTreesDisplay) -> None:
+    def draw(
+        self,
+        display: PyTreesDisplay,
+        offset: Optional[Pos] = None,
+    ) -> None:
+        if offset is None:
+            offset = display.offset
+
         pygame.draw.circle(
             surface=display.surface,
             color=self._type.value.value,
-            center=(self._pos - display.offset).tuple(),
+            center=(self._pos - offset).tuple(),
             radius=self._size,
         )
         if display.debug:
@@ -100,22 +107,29 @@ class TreeNode(Drawable):
                 surface=display.surface,
                 color=PyTreeColor.BLACK.value,
                 rect=pygame.Rect(
-                    (self._pos - display.offset).tuple(),
-                    Pos(self._size, self._size).tuple(),
+                    (self._pos - Pos(self._size, self._size) - offset).tuple(),
+                    Pos(self._size*2, self._size*2).tuple(),
                 ),
                 width=1,
             )
 
-    def draw_recursive(self, display: PyTreesDisplay) -> None:
+    def draw_recursive(
+        self,
+        display: PyTreesDisplay,
+        offset: Optional[Pos] = None,
+    ) -> None:
+        if offset is None:
+            offset = display.offset
+
         for child in self._children:
             pygame.draw.line(
                 surface=display.surface,
                 color=PyTreeColor.BLACK.value,
-                start_pos=(self._pos - display.offset).tuple(),
-                end_pos=(child._pos - display.offset).tuple(),
+                start_pos=(self._pos - offset).tuple(),
+                end_pos=(child._pos - offset).tuple(),
             )
-            child.draw_recursive(display)
-        self.draw(display)
+            child.draw_recursive(display, offset)
+        self.draw(display, offset)
 
     @classmethod
     def clone(
@@ -259,26 +273,28 @@ class Tree(Drawable):
         self.bounds = Bounds(*self._root_node.get_pos_extremes())
         self._nodes: set[TreeNode] = self._root_node.get_children_recursively()
 
-    def draw(self, display: PyTreesDisplay) -> None:
-        self._root_node.draw_recursive(display)
+    def draw(
+        self,
+        display: PyTreesDisplay,
+        offset: Optional[Pos] = None,
+    ) -> None:
+        if offset is None:
+            offset = display.offset
+
+        self._root_node.draw_recursive(display, offset)
         if display.debug:
             pygame.draw.rect(
                 surface=display.surface,
                 color=PyTreeColor.BLACK.value,
                 rect=pygame.Rect(
-                    (self.bounds.topleft - display.offset).tuple(),
+                    (self.bounds.topleft - offset).tuple(),
                     (self.bounds.botright - self.bounds.topleft).tuple(),
                 ),
                 width=1,
             )
             draw_text(
                 surface=display.surface,
-                left_top=(self.bounds.topleft - display.offset),
+                left_top=(self.bounds.topleft - offset),
                 text=str(self._energy),
                 fontsize=10,
             )
-            # canvas.create_text(
-            #     self.bounds.topleft.tuple(),
-            #     fill=PyTreeColor.ORANGE.value,
-            #     text=str(self._energy),
-            # )

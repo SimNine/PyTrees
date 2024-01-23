@@ -26,6 +26,7 @@
 from enum import Enum
 import math
 import random
+from typing import Optional
 
 import pygame
 from pytrees.display import PyTreesDisplay
@@ -122,7 +123,14 @@ class Environment(Drawable):
                     0,
                 ))
 
-    def draw(self, display: PyTreesDisplay) -> None:
+    def draw(
+        self,
+        display: PyTreesDisplay,
+        offset: Optional[Pos] = None,
+    ) -> None:
+        if offset is None:
+            offset = display.offset
+
         # Draw background
         display.surface.fill(color=PyTreeColor.SKY_BLUE.value)
 
@@ -131,7 +139,7 @@ class Environment(Drawable):
             surface=display.surface,
             color=PyTreeColor.BLACK.value,
             rect=pygame.Rect(
-                (-display.offset).tuple(),
+                (-offset).tuple(),
                 self._dims.tuple(),
             ),
             width=1,
@@ -220,7 +228,11 @@ class Landscape(Drawable):
         self._ground_levels: list[int] = []
         self._populate_ground_levels()
 
-    def draw(self, display: PyTreesDisplay) -> None:
+    def draw(
+        self,
+        display: PyTreesDisplay,
+        offset: Optional[Pos] = None,
+    ) -> None:
         for i, level in enumerate(self._ground_levels):
             pygame.draw.line(
                 surface=display.surface,
@@ -268,6 +280,7 @@ class Particle(Pos, Drawable):
     def draw(
         self,
         display: PyTreesDisplay,
+        offset: Optional[Pos] = None,
     ) -> None:
         pygame.draw.rect(
             surface=display.surface,

@@ -54,41 +54,23 @@ class PyTreesState(Tickable):
     ) -> None:
         self.environment.draw(disp)
 
-        # Get the most recently clicked tree, if there is one
-        if disp.mouse_click_screen:
-            for tree in self.environment._trees:
-                if tree.bounds.contains(disp.mouse_click_world):
-                    pygame.draw.rect(
-                        surface=disp.surface,
-                        color=PyTreeColor.WHITE.value,
-                        rect=pygame.Rect(
-                            Pos(0, 0).tuple(),
-                            (tree.bounds.botright - tree.bounds.topleft + Dims(20, 20)).tuple()
-                        ),
-                    )
-                    # disp.canvas_debug().scan_mark(0, 0)
-                    # disp.canvas_debug().scan_dragto(
-                    #     -tree._root_node._pos.x,
-                    #     -tree._root_node._pos.y,
-                    #     gain=1,
-                    # )
-                    # tree.draw(disp.canvas_debug())
-                    # disp.canvas_debug().scan_mark(0, 0)
-                    # disp.canvas_debug().scan_dragto(
-                    #     tree._root_node._pos.x,
-                    #     tree._root_node._pos.y,
-                    #     gain=1,
-                    # )
-                    break
-        # print(f"mouse click {disp.click_pos_prev} -> {disp.click_pos}")
-
-        # disp.canvas_debug().create_rectangle(
-        #     20, 20, 50, 90,
-        #     fill=PyTreeColor.BLUE.value,
-        # )
-
-        # if self.last_selected_tree:
-        #     self.last_selected_tree.draw(disp.canvas_debug())
+        # Check if a tree has been clicked
+        # TODO: improve this by storing state elsewhere
+        for tree in self.environment._trees:
+            if tree.bounds.contains(disp.mouse_click_world):
+                pygame.draw.rect(
+                    surface=disp.surface,
+                    color=PyTreeColor.WHITE.value,
+                    rect=pygame.Rect(
+                        Pos(0, 0).tuple(),
+                        (tree.bounds.botright - tree.bounds.topleft + Dims(20, 20)).tuple()
+                    ),
+                )
+                tree.draw(
+                    display=disp,
+                    offset=tree.bounds.topleft - Pos(10, 10),
+                )
+                break
 
     def tick(
         self,

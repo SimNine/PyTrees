@@ -24,11 +24,10 @@
 
 
 import abc
-import tkinter
-
-import pygame
+from typing import Optional
 
 from pytrees.display import PyTreesDisplay
+from pytrees.utils import Pos
 
 
 class Drawable(abc.ABC):
@@ -37,6 +36,7 @@ class Drawable(abc.ABC):
     def draw(
         self,
         display: PyTreesDisplay,
+        offset: Optional[Pos] = None
     ) -> None:
         raise NotImplementedError()
 
